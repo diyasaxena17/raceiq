@@ -47,7 +47,7 @@ RaceIQ is designed to feel like an F1 pit wall strategy dashboard: fast, data-ri
 ## Planned MVP Features
 
 - Visually polished landing page
-- Dashboard with mock race stats
+- Dashboard with mock race stats (initialy)
 - Simulation form
 - Results page with charts
 - Strategy timeline
