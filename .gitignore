@@ -16,16 +16,21 @@ build/
 .env.test.local
 .env.production.local
 
-# Java / Spring Boot
-target/
-*.class
-*.jar
-*.war
-*.ear
+# Python / FastAPI / ML
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
 
-# Maven / Gradle
-.gradle/
-.mvn/wrapper/maven-wrapper.jar
+# ML data
+ml/data/raw/*
+!ml/data/raw/.gitkeep
+ml/data/processed/*
+!ml/data/processed/.gitkeep
+*.pkl
 
 # Logs
 *.log

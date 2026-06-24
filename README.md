@@ -1,62 +1,28 @@
 # RaceIQ
 
-RaceIQ is an F1 race strategy simulator built as a full-stack web application.  
-It lets users configure race strategies, simulate pit stops and tyre choices, view lap-by-lap predictions, and receive AI-generated strategy insights.
+RaceIQ is an F1 race strategy simulator built as a polished full-stack portfolio project.
 
-## Vision
+The MVP focuses on a visually strong strategy dashboard, a FastAPI backend for pit strategy prediction and replay endpoints, and a small ML workspace for training and evaluating a pit recommendation model.
 
-RaceIQ is designed to feel like an F1 pit wall strategy dashboard: fast, data-rich, visual, and polished.
+## Project Structure
 
-## Tech Stack
+```txt
+raceiq/
+├── frontend/   # React + TypeScript + Vite dashboard
+├── backend/    # FastAPI app and model-serving layer
+├── ml/         # data collection, training, experiments, and outputs
+├── docs/       # planning, architecture, model, and data docs
+└── scripts/    # local helper scripts
+```
 
-### Frontend
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
-- shadcn/ui-style components
-- Framer Motion
-- Recharts
-- Lucide React
+## MVP Priorities
 
-### Backend
-- Java Spring Boot
-- REST APIs
-- Microservices architecture
-- PostgreSQL
-- Spring Data JPA
+- Stunning React dashboard
+- Pit recommendation and race replay flow
+- Simple FastAPI backend
+- Focused ML pipeline, not a complex live telemetry system
+- Strong documentation for portfolio review
 
-### DevOps
-- Docker
-- Docker Compose
-- Containerized frontend
-- Containerized backend services
-- Containerized PostgreSQL
+## Status
 
-### AI/ML
-- Mock AI strategy insight service for MVP
-- Optional real LLM integration later
-
-## Planned Core Pages
-
-- Landing Page
-- Dashboard Page
-- New Simulation Page
-- Results Page
-
-## Planned MVP Features
-
-- Visually polished landing page
-- Dashboard with mock race stats (initialy)
-- Simulation form
-- Results page with charts
-- Strategy timeline
-- AI insight card
-- Mock simulation data
-- Backend strategy API
-- PostgreSQL persistence
-- Dockerized full app
-
-## Project Status
-
-Currently in early setup.
+RaceIQ is currently in early MVP setup. The frontend scaffold exists, and the repo has been organized for the next implementation phase.

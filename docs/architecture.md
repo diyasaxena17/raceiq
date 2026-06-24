@@ -2,35 +2,36 @@
 
 ## Overview
 
-RaceIQ is a full-stack F1 race strategy simulator.
+RaceIQ is a full-stack F1 race strategy simulator organized around a focused MVP:
 
-The application is designed as a monorepo with:
-
-- React frontend
-- Spring Boot backend services
-- PostgreSQL database
-- Docker-based local development
-- Optional real F1 data ingestion layer
+- React frontend for the strategy dashboard
+- FastAPI backend for prediction, replay, and health routes
+- ML workspace for data collection, feature building, training, and evaluation
+- Lightweight docs and helper scripts
 
 ## Monorepo Structure
 
 ```txt
 raceiq/
-├── apps/
-│   └── frontend/
-├── services/
-│   ├── user-service/
-│   ├── race-service/
-│   ├── strategy-service/
-│   └── ai-insights-service/
-├── data/
-│   ├── raw/
-│   ├── processed/
-│   └── scripts/
-├── infra/
-│   ├── docker/
-│   └── database/
+├── frontend/
+├── backend/
+├── ml/
 ├── docs/
 ├── scripts/
 ├── docker-compose.yml
 └── README.md
+```
+
+## MVP Architecture
+
+```txt
+Frontend dashboard
+  ↓
+FastAPI backend
+  ↓
+Feature builder + model service
+  ↓
+Pit recommendation model
+```
+
+The first implementation should stay narrow: build the visual simulator, expose a small backend API, and train or stub one explainable pit recommendation model.

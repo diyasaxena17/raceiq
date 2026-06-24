@@ -1,107 +1,47 @@
 # RaceIQ API Contracts
 
-## Strategy Service
+## Backend
 
 Base URL:
 
 ```txt
-http://localhost:8080
+http://localhost:8000
 ```
 
-## Create Simulation
-
-### Endpoint
+## Health Check
 
 ```http
-POST /api/simulations
+GET /health
 ```
 
-### Request Body
+Example response:
 
 ```json
 {
-  "circuit": "Monza",
-  "driver": "Lando Norris",
-  "team": "McLaren",
-  "totalLaps": 53,
-  "startingTyre": "SOFT",
-  "pitStopLap": 22,
-  "secondTyre": "MEDIUM",
-  "weather": "DRY",
-  "riskLevel": "BALANCED"
+  "status": "ok"
 }
 ```
 
-### Response Body
+## Predict Pit Recommendation
 
-```json
-{
-  "id": "sim_001",
-  "circuit": "Monza",
-  "driver": "Lando Norris",
-  "team": "McLaren",
-  "predictedRaceTimeSeconds": 4865.42,
-  "confidenceScore": 87,
-  "riskLevel": "Medium",
-  "recommendedStrategy": "One-stop strategy: Soft to Medium",
-  "aiSummary": "This strategy offers strong early pace while controlling tyre degradation after lap 22.",
-  "lapTimes": [
-    {
-      "lap": 1,
-      "timeSeconds": 89.2,
-      "tyre": "SOFT"
-    }
-  ],
-  "tyreDegradation": [
-    {
-      "lap": 1,
-      "value": 3,
-      "tyre": "SOFT"
-    }
-  ]
-}
-```
-
-## Get Simulation Result
-
-### Endpoint
+Planned endpoint:
 
 ```http
-GET /api/simulations/{id}
+POST /predict
 ```
 
-## Get Circuits
+This endpoint will accept the current race state and return a pit recommendation, confidence score, and explanation.
 
-### Endpoint
+## Replay Race State
+
+Planned endpoint:
 
 ```http
-GET /api/circuits
+POST /replay
 ```
 
-## Get Drivers
-
-### Endpoint
-
-```http
-GET /api/drivers
-```
-
-## Real F1 Data Endpoints
-
-These can come later.
-
-### Get Real Sessions
-
-```http
-GET /api/real-f1/sessions
-```
-
-### Get Real Lap Data
-
-```http
-GET /api/real-f1/laps?sessionKey=latest
-```
+This endpoint will replay or summarize race state changes for the dashboard timeline.
 
 ## MVP API Rule
 
-Only `/api/simulations` is required for the first backend MVP.
+Only `/health` and one prediction-style endpoint are required for the first backend pass.
