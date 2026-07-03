@@ -95,7 +95,7 @@ RaceIQ is in early scaffold stage.
 
 - Frontend: React, TypeScript, Vite, Tailwind, Recharts, Framer Motion, and Lucide are installed. The current UI is a static hero screen. Dashboard component files exist but are empty.
 - Backend: FastAPI is installed and `GET /health` exists in `backend/app/main.py`. Predict, replay, schema, and service files exist but are empty.
-- ML: ML directories, output files, and script names exist. Training, collection, dataset, and evaluation scripts are empty. Metrics and feature importance outputs are placeholders.
+- ML: ML directories, output files, and pipeline script names exist. Training, collection, dataset, and evaluation scripts are empty. Metrics and feature importance outputs are placeholders.
 - Docs: Initial planning docs exist, but they need to be kept in sync as implementation begins.
 - Tooling: `frontend/package-lock.json` and `node_modules` exist. `docker-compose.yml`, setup script, and dev runner are placeholders.
 

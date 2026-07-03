@@ -10,9 +10,9 @@ The MVP focuses on a visually strong strategy dashboard, a FastAPI backend for p
 raceiq/
 ├── frontend/   # React + TypeScript + Vite dashboard
 ├── backend/    # FastAPI app and model-serving layer
-├── ml/         # data collection, training, experiments, and outputs
-├── docs/       # planning, architecture, model, and data docs
-└── scripts/    # local helper scripts
+├── ml/           # ML data, pipeline scripts, experiments, and outputs
+├── docs/         # planning, architecture, model, and data docs
+└── dev-scripts/  # repo-wide setup and local development helpers
 ```
 
 ## MVP Priorities

@@ -13,9 +13,9 @@ raceiq/
 ├── frontend/              # Main React + TypeScript + Vite app
 ├── backend/               # FastAPI app, routes, schemas, and services
 ├── backend/models/        # Future serialized model artifacts
-├── ml/                    # Data, scripts, notebooks, and model outputs
+├── ml/                    # Data, pipeline scripts, notebooks, and model outputs
 ├── docs/                  # Product, architecture, API, data, and model docs
-├── scripts/               # Local setup and dev helpers
+├── dev-scripts/           # Repo-wide setup and local development helpers
 ├── docker-compose.yml     # Placeholder
 └── README.md
 ```
@@ -118,7 +118,7 @@ The first backend implementation can use deterministic rules. The frontend shoul
 
 ## Data and ML Architecture
 
-The ML workspace lives in `ml/`.
+The ML workspace lives in `ml/`. ML-specific scripts live in `ml/pipeline-scripts/` so they are not confused with repo-wide development helpers.
 
 Intended flow:
 
@@ -142,7 +142,7 @@ train_pit_classifier.py
 Current state:
 
 - `ml/data/raw`, `ml/data/processed`, and `ml/data/sample` exist with `.gitkeep` files.
-- ML scripts are empty placeholders.
+- `ml/pipeline-scripts/` contains empty placeholders for collection, dataset building, training, and evaluation.
 - `ml/outputs/metrics.json` contains `{}`.
 - `ml/outputs/feature_importance.csv` contains only headers.
 
@@ -166,7 +166,7 @@ uvicorn app.main:app --reload
 
 Current caveats:
 
-- `scripts/setup.sh` and `scripts/run-dev.sh` are placeholders.
+- `dev-scripts/setup.sh` and `dev-scripts/run-dev.sh` are placeholders.
 - `docker-compose.yml` is empty.
 - Backend dependency installation is manual through `backend/requirements.txt`.
 
@@ -193,5 +193,5 @@ No database is required for the first complete demo.
 
 - The docs and file names imply more functionality than currently exists.
 - Predict, replay, schema, and service files are scaffolded but not connected.
-- ML scripts and outputs are placeholders, so model claims should stay conservative.
+- ML pipeline scripts and outputs are placeholders, so model claims should stay conservative.
 - No automated tests currently protect API contracts or frontend rendering.
