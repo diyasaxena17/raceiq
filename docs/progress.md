@@ -41,6 +41,8 @@ Early MVP planning and scaffold cleanup.
 - Verified Playwright with `npm run test:e2e`.
 - Shifted the dashboard visual system toward a cyberpunk minimalist palette: charcoal background, cool text, electric-blue primary accents, subtle motion, and sticky responsive navigation.
 - Added a routed frontend structure with a cinematic landing page at `/`, the pit-wall dashboard at `/strategy`, and planned surfaces at `/forecast` and `/methodology`.
+- Made the landing page more cinematic with a race-control visual scene.
+- Added route-level code splitting so the strategy dashboard loads as a separate bundle and the Vite chunk-size warning is resolved.
 
 ## Completed
 

@@ -1,4 +1,4 @@
-import { ArrowRight, Gauge, GitBranch, LineChart, Radar } from "lucide-react"
+import { ArrowRight, Gauge, GitBranch, Radar, ScanLine, TimerReset } from "lucide-react"
 import { Link } from "react-router-dom"
 
 const entryCards = [
@@ -44,10 +44,23 @@ export function LandingPage() {
         </div>
 
         <div className="landing-visual" aria-label="RaceIQ system preview">
-          <div className="visual-orbit">
-            <span />
-            <span />
-            <span />
+          <div className="cinema-stage">
+            <div className="track-ribbon">
+              <span />
+              <span />
+              <span />
+            </div>
+            <div className="ghost-car car-a" />
+            <div className="ghost-car car-b" />
+            <div className="scan-panel">
+              <ScanLine aria-hidden="true" />
+              <span>Sector scan</span>
+              <strong>Clean air detected</strong>
+            </div>
+            <div className="timing-chip">
+              <TimerReset aria-hidden="true" />
+              <span>Pit loss 21.8s</span>
+            </div>
           </div>
           <div className="visual-console">
             <div>
@@ -63,7 +76,6 @@ export function LandingPage() {
               <strong>86%</strong>
             </div>
           </div>
-          <LineChart aria-hidden="true" className="visual-icon" />
         </div>
       </div>
 
