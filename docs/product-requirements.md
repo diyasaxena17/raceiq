@@ -2,19 +2,19 @@
 
 ## Product Summary
 
-RaceIQ is an F1 race strategy simulator that helps a user explore pit stop timing, tyre life, race pace, and simple strategy recommendations from a pit wall style dashboard.
+RaceIQ is an F1 race intelligence dashboard that helps a user explore race strategy and forecast short-term winning likelihood for drivers and teams.
 
-The MVP should be a polished portfolio product, not a full live telemetry platform. It should make one core workflow feel complete: load a race scenario, inspect the current race state, receive a pit recommendation, and understand the reasoning.
+The first MVP should still be polished and narrow, not a full live telemetry platform. It should make one core workflow feel complete: load a race scenario, inspect the current race state, receive a pit recommendation, and understand the reasoning. The next major capability should forecast the likelihood of drivers and teams winning over the next two races, with a path to expand to all remaining races in the season.
 
 ## Target Users
 
 - Recruiters and hiring managers reviewing a full-stack and ML portfolio project.
-- F1 fans who want to explore race strategy tradeoffs visually.
+- F1 fans who want to explore race strategy tradeoffs and near-term race outcome probabilities visually.
 - Developers or data practitioners who want to understand how the prediction flow is built.
 
 ## User Problem
 
-Race strategy is hard to reason about because tyre degradation, track position, lap number, weather, and pit loss all interact. RaceIQ should make those tradeoffs visible and explainable in a single dashboard.
+Race strategy and race outcomes are hard to reason about because tyre degradation, track position, lap number, weather, car performance, driver form, team execution, track fit, and sentiment all interact. RaceIQ should make those tradeoffs and probabilities visible and explainable in a single dashboard.
 
 ## MVP Goals
 
@@ -25,6 +25,14 @@ Race strategy is hard to reason about because tyre degradation, track position, 
 - Show supporting race context: driver cards, timeline, tyre degradation chart, and key metrics.
 - Keep the system easy to run locally and easy to explain in docs.
 
+## Forecasting Goals
+
+- Predict the likelihood of drivers winning over the next two races.
+- Predict the likelihood of teams winning over the next two races.
+- Explain the main factors behind each probability.
+- Use features such as track characteristics, weather, car characteristics, driver characteristics, team strengths, recent form, reliability, qualifying/race pace, and team/media sentiment.
+- Design the model and data structure so the horizon can later expand from the next two races to every remaining race in the season.
+
 ## Non-Goals
 
 - Live race ingestion.
@@ -33,6 +41,7 @@ Race strategy is hard to reason about because tyre degradation, track position, 
 - Multi-team collaboration features.
 - Production deployment infrastructure.
 - Complex ML experimentation platform.
+- Betting advice, gambling integrations, or guaranteed predictions.
 
 ## Core MVP Workflow
 
@@ -52,12 +61,15 @@ Race strategy is hard to reason about because tyre degradation, track position, 
 - Display a pit recommendation panel with decision, confidence, predicted outcome, and explanation.
 - Display a race timeline of important events.
 - Display a tyre degradation chart for at least one driver or compound.
+- Display next-two-race win likelihood for drivers and teams once forecasting is implemented.
+- Display forecast explanations with the highest-impact factors.
 - Use mock/sample data until real data ingestion is ready.
 
 ### Backend API
 
 - `GET /health` returns service health.
 - `POST /predict` accepts current race state and returns a recommendation.
+- `POST /forecast/win-likelihood` accepts upcoming race context and returns driver/team win probabilities.
 - `POST /replay` returns timeline or replay state for a sample scenario.
 - API responses should be typed with Pydantic schemas.
 - Backend should support deterministic stub logic first, then model-backed logic.
@@ -67,6 +79,9 @@ Race strategy is hard to reason about because tyre degradation, track position, 
 - Define the training and inference feature set before training.
 - Support a small processed sample dataset for local development.
 - Train a simple classifier or rules-plus-model baseline for pit recommendation.
+- Train a first win-likelihood model for driver and team outcomes over a two-race horizon.
+- Store historical race, qualifying, practice, weather, track, team, driver, car, reliability, and sentiment features in a queryable format.
+- Use PostgreSQL when the app needs reusable historical data, feature tables, prediction runs, and forecast outputs.
 - Store metrics and feature importance after a real training run.
 - Document model limitations in `docs/model-card.md`.
 
@@ -81,11 +96,25 @@ The prediction endpoint should return:
 - `expected_time_delta`: estimated gain/loss in seconds
 - `suggested_compound`: tyre compound when pitting is recommended
 
+## Forecast Output
+
+The win-likelihood endpoint should return:
+
+- `forecast_horizon`: `next_2_races` initially, later `remaining_season`
+- `races`: upcoming races included in the forecast
+- `driver_probabilities`: driver-level win probabilities by race and overall horizon
+- `team_probabilities`: team-level win probabilities by race and overall horizon
+- `top_factors`: ranked factors influencing the prediction
+- `model_confidence`: confidence or uncertainty score for the forecast
+- `generated_at`: timestamp for the forecast run
+- `data_freshness`: latest source update used by the model
+
 ## Success Metrics
 
 - A new user can run the frontend and backend locally from documented commands.
 - The main dashboard is usable on desktop and mobile.
 - The predict endpoint works with a documented example payload.
+- The win-likelihood forecast endpoint can return a documented example payload for the next two races.
 - The app can complete the core MVP workflow without manual code edits.
 - README and docs clearly explain architecture, model status, and next steps.
 
@@ -94,8 +123,9 @@ The prediction endpoint should return:
 RaceIQ is in early scaffold stage.
 
 - Frontend: React, TypeScript, Vite, Tailwind, Recharts, Framer Motion, and Lucide are installed. The current UI is a static hero screen. Dashboard component files exist but are empty.
-- Backend: FastAPI is installed and `GET /health` exists in `backend/app/main.py`. Predict, replay, schema, and service files exist but are empty.
+- Backend: FastAPI is installed and `GET /health` exists in `backend/app/routes/health.py`. Predict, replay, schema, and service files exist but are empty.
 - ML: ML directories, output files, and pipeline script names exist. Training, collection, dataset, and evaluation scripts are empty. Metrics and feature importance outputs are placeholders.
+- Forecasting: win-likelihood forecasting is a planned requirement, not implemented yet.
 - Docs: Initial planning docs exist, but they need to be kept in sync as implementation begins.
 - Tooling: `frontend/package-lock.json` and `node_modules` exist. `docker-compose.yml`, setup script, and dev runner are placeholders.
 
@@ -129,3 +159,18 @@ RaceIQ is in early scaffold stage.
 - Add README run instructions and screenshots.
 - Add model card details and limitations.
 - Add Docker or one-command local dev only if it helps the demo.
+
+### Sprint 5: Forecasting Data Foundation
+
+- Design PostgreSQL tables for races, tracks, drivers, teams, sessions, weather, sentiment snapshots, feature rows, model runs, and forecast outputs.
+- Add seed data for at least two upcoming races and a small historical sample.
+- Add data ingestion scripts for race calendar, historical results, weather, and sentiment sources.
+- Add data dictionary fields for forecasting features.
+
+### Sprint 6: Next-Two-Races Forecasting
+
+- Implement `/forecast/win-likelihood` with a deterministic baseline first.
+- Train or prototype a simple ML model for driver/team win likelihood.
+- Add forecast cards or charts to the dashboard.
+- Show top explanatory factors and uncertainty.
+- Keep the API shape ready for a future remaining-season forecast.

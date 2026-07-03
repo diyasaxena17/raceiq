@@ -29,6 +29,7 @@ raceiq/
 - [Architecture](docs/architecture.md)
 - [API](docs/api.md)
 - [Roadmap](docs/roadmap.md)
+- [Project Progress](docs/progress.md)
 
 ## Status
 
