@@ -1,4 +1,4 @@
-# RaceIQ MVP Plan
+# RaceIQ Roadmap
 
 ## Goal
 

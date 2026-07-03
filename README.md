@@ -23,6 +23,13 @@ raceiq/
 - Focused ML pipeline, not a complex live telemetry system
 - Strong documentation for portfolio review
 
+## Docs
+
+- [Product Requirements](docs/product-requirements.md)
+- [Architecture](docs/architecture.md)
+- [API](docs/api.md)
+- [Roadmap](docs/roadmap.md)
+
 ## Status
 
-RaceIQ is currently in early MVP setup. The frontend scaffold exists, and the repo has been organized for the next implementation phase.
+RaceIQ is currently in early MVP scaffold stage. The frontend renders a static hero screen, the backend exposes `GET /health`, and the dashboard, prediction, replay, and ML pipeline pieces are placeholders ready for implementation.

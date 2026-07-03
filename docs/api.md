@@ -1,4 +1,4 @@
-# RaceIQ API Contracts
+# RaceIQ API
 
 ## Backend
 
