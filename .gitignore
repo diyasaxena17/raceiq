@@ -38,6 +38,10 @@ npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 
+# Browser test output
+test-results/
+playwright-report/
+
 # Docker
 *.pid
 

@@ -33,21 +33,28 @@ Early MVP planning and scaffold cleanup.
 - Added next-two-races driver/team win-likelihood forecasting as a planned product capability.
 - Documented PostgreSQL as the recommended data store for the forecasting phase.
 - Added planned forecasting feature groups: track, weather, car, driver, team, reliability, and sentiment.
+- Replaced the static frontend hero with a real mock-data dashboard.
+- Added pit recommendation, branching strategy timeline, race scrubber, circuit pulse map, tyre degradation chart, driver strategy cards, weather pressure, and forecast preview panels.
+- Verified the frontend with `npm run build` and `npm run lint`.
+- Installed Playwright for frontend browser testing.
+- Added desktop and mobile smoke tests for dashboard rendering and race scrubber interaction.
+- Verified Playwright with `npm run test:e2e`.
+- Shifted the dashboard visual system toward a cyberpunk minimalist palette: charcoal background, cool text, electric-blue primary accents, subtle motion, and sticky responsive navigation.
 
 ## Completed
 
 - Repository structure is easier to read.
 - Core docs exist and describe the intended MVP plus forecasting direction.
 - Health route is implemented and organized under backend routes.
+- Frontend now has a usable mock-data RaceIQ dashboard.
+- Frontend has a first Playwright smoke test suite.
 
 ## In Progress
 
-- Product requirements are being expanded from pit strategy into race intelligence and win-likelihood forecasting.
-- Architecture is being refined around a future PostgreSQL-backed forecasting data model.
+- Dashboard polish and data/API integration are ready for the next iteration.
 
 ## Not Started
 
-- Real dashboard implementation.
 - Backend `/predict` endpoint.
 - Backend `/replay` endpoint.
 - Backend `/forecast/win-likelihood` endpoint.

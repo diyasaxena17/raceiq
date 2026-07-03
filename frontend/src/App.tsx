@@ -1,22 +1,158 @@
+import { Activity, CloudSun, RadioTower, Trophy } from "lucide-react"
+import { useMemo, useState } from "react"
+
+import { CircuitPulse } from "./components/CircuitPulse"
+import { DriverStrategyCard } from "./components/DriverStrategyCard"
+import { PitRecommendationPanel } from "./components/PitRecommendationPanel"
+import { RaceTimeline } from "./components/RaceTimeline"
+import { TyreDegradationChart } from "./components/TyreDegradationChart"
+import {
+  drivers,
+  forecastPreview,
+  raceState,
+  strategyBranches,
+  timelineEvents,
+  tyreData,
+} from "./data/mockRace"
+
 function App() {
+  const [activeLap, setActiveLap] = useState(raceState.lap)
+  const focusDriver = useMemo(
+    () => drivers.find((driver) => driver.code === raceState.focusDriver),
+    [],
+  )
+
   return (
-    <main className="min-h-screen bg-race-black text-white">
-      <section className="mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 text-center">
-        <p className="mb-4 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-race-silver">
-          RaceIQ MVP
-        </p>
+    <main className="race-shell">
+      <nav className="top-nav" aria-label="Primary navigation">
+        <a className="brand-mark" href="#overview" aria-label="RaceIQ overview">
+          <span />
+          RaceIQ
+        </a>
+        <div className="nav-links">
+          <a href="#strategy">Strategy</a>
+          <a href="#track">Track</a>
+          <a href="#drivers">Drivers</a>
+          <a href="#forecast">Forecast</a>
+        </div>
+      </nav>
 
-        <h1 className="max-w-4xl text-5xl font-bold tracking-tight md:text-7xl">
-          F1 race strategy, visualized like a pit wall.
-        </h1>
+      <section className="hero-band" aria-labelledby="page-title">
+        <div className="hero-copy" id="overview">
+          <p className="eyebrow live-eyebrow">
+            <span /> RaceIQ strategy room
+          </p>
+          <h1 id="page-title">{raceState.headline}</h1>
+          <p>{raceState.subline}</p>
+        </div>
 
-        <p className="mt-6 max-w-2xl text-lg text-race-silver">
-          Simulate tyre choices, pit stops, lap times, race pace, and AI strategy insights.
-        </p>
+        <div className="session-strip" aria-label="Session summary">
+          <div>
+            <span>Session</span>
+            <strong>{raceState.session}</strong>
+          </div>
+          <div>
+            <span>Weather</span>
+            <strong>{raceState.weather}</strong>
+          </div>
+          <div>
+            <span>Track temp</span>
+            <strong>{raceState.trackTemp}</strong>
+          </div>
+          <div>
+            <span>Safety car</span>
+            <strong>{raceState.safetyCar}</strong>
+          </div>
+        </div>
+      </section>
 
-        <button className="mt-8 rounded-xl bg-race-red px-6 py-3 font-semibold text-white shadow-glow transition hover:scale-105">
-          Start Simulation
-        </button>
+      <section className="command-grid" aria-label="Race command dashboard">
+        <div className="left-stack" id="strategy">
+          <PitRecommendationPanel branches={strategyBranches} />
+          <RaceTimeline
+            activeLap={activeLap}
+            events={timelineEvents}
+            onLapChange={setActiveLap}
+            totalLaps={raceState.totalLaps}
+          />
+        </div>
+
+        <div className="center-stack" id="track">
+          <CircuitPulse activeLap={activeLap} totalLaps={raceState.totalLaps} />
+          <TyreDegradationChart data={tyreData} />
+        </div>
+
+        <aside className="right-stack" aria-label="Driver and forecast panels">
+          <section className="panel driver-panel" id="drivers" aria-labelledby="driver-panel-title">
+            <div className="panel-header">
+              <div>
+                <p className="eyebrow">Timing tower</p>
+                <h2 id="driver-panel-title">Focus group</h2>
+              </div>
+              <Activity aria-hidden="true" className="header-icon" />
+            </div>
+            <div className="driver-list">
+              {drivers.map((driver) => (
+                <DriverStrategyCard
+                  driver={driver}
+                  isFocus={driver.code === raceState.focusDriver}
+                  key={driver.code}
+                />
+              ))}
+            </div>
+          </section>
+
+          <section className="panel forecast-panel" id="forecast" aria-labelledby="forecast-title">
+            <div className="panel-header">
+              <div>
+                <p className="eyebrow">Future module</p>
+                <h2 id="forecast-title">Next two race outlook</h2>
+              </div>
+              <Trophy aria-hidden="true" className="header-icon" />
+            </div>
+            <p>
+              A preview of the forecasting layer: team win likelihood will later combine track,
+              weather, car form, driver form, and sentiment.
+            </p>
+            <div className="forecast-bars">
+              {forecastPreview.map((team) => (
+                <div className="forecast-row" key={team.label}>
+                  <div>
+                    <span>{team.label}</span>
+                    <strong>{team.value}%</strong>
+                  </div>
+                  <div className="bar-track">
+                    <span style={{ background: team.color, width: `${team.value}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="panel weather-panel" aria-labelledby="weather-title">
+            <div className="panel-header">
+              <div>
+                <p className="eyebrow">Radar desk</p>
+                <h2 id="weather-title">Weather pressure</h2>
+              </div>
+              <CloudSun aria-hidden="true" className="header-icon" />
+            </div>
+            <div className="weather-grid">
+              <div>
+                <span>Rain chance</span>
+                <strong>{raceState.rainChance}</strong>
+              </div>
+              <div>
+                <span>Window</span>
+                <strong>L31-L35</strong>
+              </div>
+            </div>
+            <div className="signal-note">
+              <RadioTower aria-hidden="true" />
+              <span>{focusDriver?.code} is inside the final dry-tyre window.</span>
+            </div>
+          </section>
+        </aside>
       </section>
     </main>
   )

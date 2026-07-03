@@ -51,7 +51,12 @@ Update `docs/progress.md` after meaningful implementation or planning changes.
 
 - The canonical frontend is `frontend/`.
 - Use React, TypeScript, Vite, Tailwind CSS, Recharts, Framer Motion, and Lucide React.
-- Keep the dashboard app-first. Do not rebuild a marketing landing page.
+- Build real product experiences, not empty marketing shells. A cinematic landing/entry page is welcome when it leads into a usable dashboard, replay, forecast, or strategy workflow.
+- Do not force every feature onto one page. Prefer clear routes or views for landing, strategy dashboard, race replay, driver/team forecasting, and methodology when that improves comprehension.
+- Use the cyberpunk minimalist visual direction: charcoal background `#121212`, cool/off-white text, and electric blue `#3B82F6` as the primary accent/CTA color.
+- Keep motion intentional and subtle. Prefer small hover/focus transitions and respect reduced-motion preferences.
+- Use sticky, minimalist navigation that remains readable on mobile.
+- Avoid pure white on pure black for long text; use off-white body text to reduce halation.
 - Prefer clear components for dashboard sections:
   - `DriverStrategyCard`
   - `PitRecommendationPanel`
@@ -59,7 +64,7 @@ Update `docs/progress.md` after meaningful implementation or planning changes.
   - `TyreDegradationChart`
   - future `WinLikelihoodPanel`
 - Use mock/sample data before adding complex data ingestion.
-- Keep visual polish high, but avoid adding ornamental UI that does not help the race intelligence workflow.
+- Keep visual polish high and make the product feel memorable. Visual ambition is encouraged when it supports the race intelligence workflow, navigation, or portfolio storytelling.
 
 ## Backend Guidance
 
@@ -96,6 +101,7 @@ cd frontend
 npm run dev
 npm run build
 npm run lint
+npm run test:e2e
 ```
 
 Backend:
@@ -120,6 +126,7 @@ python -m compileall backend/app
 - Do not claim a model is trained until scripts, data, metrics, and model artifacts exist.
 - Keep docs honest about what is implemented versus planned.
 - Run the relevant build or compile check after code changes.
+- Run Playwright tests after dashboard or interaction changes.
 - Update `docs/progress.md` when a change affects project status.
 
 ## Git Hygiene
