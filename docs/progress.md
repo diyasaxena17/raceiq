@@ -40,6 +40,7 @@ Early MVP planning and scaffold cleanup.
 - Added desktop and mobile smoke tests for dashboard rendering and race scrubber interaction.
 - Verified Playwright with `npm run test:e2e`.
 - Shifted the dashboard visual system toward a cyberpunk minimalist palette: charcoal background, cool text, electric-blue primary accents, subtle motion, and sticky responsive navigation.
+- Added a routed frontend structure with a cinematic landing page at `/`, the pit-wall dashboard at `/strategy`, and planned surfaces at `/forecast` and `/methodology`.
 
 ## Completed
 
