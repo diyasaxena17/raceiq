@@ -142,7 +142,77 @@ Example response:
 GET /strategy/sample
 ```
 
-This endpoint returns a backend-shaped sample payload for the current strategy dashboard. It exists to help the frontend move from local fixtures toward a real API without adding a database yet.
+This endpoint returns a deterministic sample payload for the current strategy dashboard. Its response shape intentionally matches the frontend `StrategyDashboardData` type in `frontend/src/data/mockRace.ts`, so the frontend can later move from local fixtures to HTTP without a UI data-mapping rewrite.
+
+Example response:
+
+```json
+{
+  "raceState": {
+    "race": "Silverstone Strategy Lab",
+    "session": "Race simulation",
+    "lap": 27,
+    "totalLaps": 52,
+    "weather": "Cloud cover building",
+    "trackTemp": "31 C",
+    "rainChance": "18%",
+    "safetyCar": "Clear",
+    "focusDriver": "NOR",
+    "headline": "Read the race before the race reads you.",
+    "subline": "A mock pit wall built from race state, tyre life, and strategy branches."
+  },
+  "drivers": [
+    {
+      "code": "NOR",
+      "name": "Lando Norris",
+      "team": "McLaren",
+      "teamColor": "#ff8c1a",
+      "position": 6,
+      "gap": "+12.4s",
+      "tyre": "Medium",
+      "tyreAge": 18,
+      "pitStops": 0,
+      "paceDelta": "+0.47s",
+      "risk": "High",
+      "status": "Tyres near cliff"
+    }
+  ],
+  "timelineEvents": [
+    {
+      "lap": 27,
+      "title": "RaceIQ calls the decision lap",
+      "detail": "Norris can pit into clean air and attack on hard tyres.",
+      "type": "pit"
+    }
+  ],
+  "tyreData": [
+    {
+      "lap": 27,
+      "medium": 0.53,
+      "hard": 0.16,
+      "projected": 0.4
+    }
+  ],
+  "strategyBranches": [
+    {
+      "label": "Pit this lap",
+      "tone": "green",
+      "summary": "Hard tyre, clean air, attack phase from lap 29.",
+      "rejoin": "P9 behind Alonso",
+      "finish": "Projected P5",
+      "risk": "Low traffic risk",
+      "laps": ["L27 Box", "L28 Out-lap", "L31 P7", "L44 P5"]
+    }
+  ],
+  "forecastPreview": [
+    {
+      "label": "McLaren",
+      "value": 34,
+      "color": "#60a5fa"
+    }
+  ]
+}
+```
 
 ## Forecast Win Likelihood
 

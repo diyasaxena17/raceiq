@@ -76,3 +76,36 @@ def test_replay_returns_timeline_data() -> None:
     assert len(body["events"]) > 0
     for event in body["events"]:
         assert {"lap", "title", "detail", "type"} <= set(event)
+
+
+def test_strategy_sample_matches_frontend_dashboard_contract() -> None:
+    response = client.get("/strategy/sample")
+
+    assert response.status_code == 200
+
+    body = response.json()
+    assert {
+        "raceState",
+        "drivers",
+        "timelineEvents",
+        "tyreData",
+        "strategyBranches",
+        "forecastPreview",
+    } <= set(body)
+
+    race_state = body["raceState"]
+    assert race_state["race"] == "Silverstone Strategy Lab"
+    assert race_state["totalLaps"] == 52
+    assert race_state["trackTemp"] == "31 C"
+    assert race_state["rainChance"] == "18%"
+    assert race_state["focusDriver"] == "NOR"
+
+    driver = body["drivers"][0]
+    assert {"teamColor", "tyreAge", "pitStops", "paceDelta"} <= set(driver)
+    assert driver["code"] == "NOR"
+    assert driver["teamColor"] == "#ff8c1a"
+
+    assert len(body["timelineEvents"]) > 0
+    assert len(body["tyreData"]) > 0
+    assert len(body["strategyBranches"]) > 0
+    assert len(body["forecastPreview"]) > 0

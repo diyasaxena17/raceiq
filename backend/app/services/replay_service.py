@@ -1,9 +1,10 @@
 from app.schemas.race_state import (
     DashboardDriver,
+    DashboardRaceState,
     ForecastPreview,
     RaceMetadata,
     StrategyBranch,
-    StrategySampleResponse,
+    StrategyDashboardResponse,
     TimelineEvent,
     TyrePoint,
 )
@@ -68,23 +69,36 @@ def get_replay(request: ReplayRequest) -> ReplayResponse:
     return ReplayResponse(race_state=SAMPLE_RACE_STATE, events=events)
 
 
-def get_strategy_sample() -> StrategySampleResponse:
-    return StrategySampleResponse(
-        race_state=SAMPLE_RACE_STATE,
-        headline="Read the race before the race reads you.",
-        subline="A mock pit wall built from race state, tyre life, and strategy branches.",
+def get_strategy_sample() -> StrategyDashboardResponse:
+    return StrategyDashboardResponse(
+        raceState=DashboardRaceState(
+            race="Silverstone Strategy Lab",
+            session="Race simulation",
+            lap=27,
+            totalLaps=52,
+            weather="Cloud cover building",
+            trackTemp="31 C",
+            rainChance="18%",
+            safetyCar="Clear",
+            focusDriver="NOR",
+            headline="Read the race before the race reads you.",
+            subline=(
+                "A mock pit wall built from race state, tyre life, "
+                "and strategy branches."
+            ),
+        ),
         drivers=[
             DashboardDriver(
                 code="NOR",
                 name="Lando Norris",
                 team="McLaren",
-                team_color="#ff8c1a",
+                teamColor="#ff8c1a",
                 position=6,
                 gap="+12.4s",
                 tyre="Medium",
-                tyre_age=18,
-                pit_stops=0,
-                pace_delta="+0.47s",
+                tyreAge=18,
+                pitStops=0,
+                paceDelta="+0.47s",
                 risk="High",
                 status="Tyres near cliff",
             ),
@@ -92,13 +106,13 @@ def get_strategy_sample() -> StrategySampleResponse:
                 code="LEC",
                 name="Charles Leclerc",
                 team="Ferrari",
-                team_color="#ef1a2d",
+                teamColor="#ef1a2d",
                 position=5,
                 gap="+9.1s",
                 tyre="Medium",
-                tyre_age=16,
-                pit_stops=0,
-                pace_delta="+0.33s",
+                tyreAge=16,
+                pitStops=0,
+                paceDelta="+0.33s",
                 risk="Medium",
                 status="Covering undercut",
             ),
@@ -106,19 +120,19 @@ def get_strategy_sample() -> StrategySampleResponse:
                 code="HAM",
                 name="Lewis Hamilton",
                 team="Mercedes",
-                team_color="#00d084",
+                teamColor="#00d084",
                 position=7,
                 gap="+15.8s",
                 tyre="Hard",
-                tyre_age=7,
-                pit_stops=1,
-                pace_delta="-0.12s",
+                tyreAge=7,
+                pitStops=1,
+                paceDelta="-0.12s",
                 risk="Low",
                 status="Clean air push",
             ),
         ],
-        timeline_events=SAMPLE_TIMELINE,
-        tyre_data=[
+        timelineEvents=SAMPLE_TIMELINE,
+        tyreData=[
             TyrePoint(lap=12, medium=0.14, hard=0.04, projected=0.1),
             TyrePoint(lap=16, medium=0.21, hard=0.06, projected=0.15),
             TyrePoint(lap=20, medium=0.31, hard=0.09, projected=0.22),
@@ -127,7 +141,7 @@ def get_strategy_sample() -> StrategySampleResponse:
             TyrePoint(lap=31, medium=0.71, hard=0.21, projected=0.58),
             TyrePoint(lap=36, medium=0.94, hard=0.3, projected=0.82),
         ],
-        strategy_branches=[
+        strategyBranches=[
             StrategyBranch(
                 label="Pit this lap",
                 tone="green",
@@ -147,7 +161,7 @@ def get_strategy_sample() -> StrategySampleResponse:
                 laps=["L27 Hold", "L30 Pace drop", "L34 Box", "L44 P9"],
             ),
         ],
-        forecast_preview=[
+        forecastPreview=[
             ForecastPreview(label="McLaren", value=34, color="#60a5fa"),
             ForecastPreview(label="Ferrari", value=28, color="#3b82f6"),
             ForecastPreview(label="Mercedes", value=21, color="#2563eb"),

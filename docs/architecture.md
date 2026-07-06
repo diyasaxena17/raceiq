@@ -77,10 +77,10 @@ Intended frontend modules:
 
 Current state:
 
-- `src/App.tsx` renders a static hero screen.
-- Component files are present but empty.
-- `src/lib/api.ts` is empty.
-- Vite starter files have been removed so the frontend tree only shows RaceIQ app files.
+- `src/App.tsx` owns the route shell with route-level code splitting.
+- The landing page and strategy dashboard are separate routes.
+- `src/lib/api.ts` exposes a typed mock API over `frontend/src/data/mockRace.ts`.
+- The strategy page currently consumes local deterministic mock data, not the backend yet.
 
 ## Backend Architecture
 
@@ -114,7 +114,7 @@ Current state:
 - `app/routes/predict.py` defines `POST /predict`, backed by deterministic strategy rules.
 - `app/routes/replay.py` defines `POST /replay` and `GET /strategy/sample`, backed by local sample data.
 - Pydantic schemas exist for race state, prediction, replay, and sample dashboard responses.
-- No tests are present.
+- Backend contract tests cover health, predict, replay, and the frontend-aligned sample dashboard payload.
 
 ## API Boundary
 
@@ -128,6 +128,8 @@ Minimum MVP endpoints:
 - `GET /strategy/sample`
 
 The first backend implementation can use deterministic rules. The frontend should not need to know whether a recommendation came from rules or from a trained model.
+
+`GET /strategy/sample` is the bridge contract for the current dashboard. Its response intentionally mirrors the frontend `StrategyDashboardData` type from `frontend/src/data/mockRace.ts`, including camelCase keys such as `raceState`, `totalLaps`, `teamColor`, `timelineEvents`, `tyreData`, `strategyBranches`, and `forecastPreview`. Backend request schemas and replay metadata can remain Pythonic/snake_case where they are not directly replacing the frontend dashboard fixture.
 
 Forecasting endpoint planned after the first MVP:
 
@@ -224,6 +226,7 @@ Current caveats:
 - `dev-scripts/setup.sh` and `dev-scripts/run-dev.sh` are placeholders.
 - `docker-compose.yml` is empty.
 - Backend dependency installation is manual through `backend/requirements.txt`.
+- Frontend-to-backend HTTP wiring is intentionally deferred until the mock API contract is stable.
 
 ## Deployment Shape
 
@@ -247,8 +250,7 @@ No database is required for the first complete pit strategy demo. PostgreSQL is 
 
 ## Immediate Technical Risks
 
-- The docs and file names imply more functionality than currently exists.
-- Backend tests are not yet committed, though the current routes have been checked with compile/import and in-process requests.
+- The docs and file names still describe planned forecasting and ML functionality that is not implemented yet.
 - ML pipeline scripts and outputs are placeholders, so model claims should stay conservative.
 - Forecasting requires careful data quality work because sentiment, weather, and car performance features can be noisy or unavailable.
-- No automated tests currently protect API contracts or frontend rendering.
+- Frontend rendering and backend API contracts have first-pass automated checks, but no end-to-end backend integration is wired into the UI yet.

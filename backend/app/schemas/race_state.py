@@ -48,17 +48,31 @@ class RaceMetadata(BaseModel):
     focus_driver: str
 
 
+class DashboardRaceState(BaseModel):
+    race: str
+    session: str
+    lap: int
+    totalLaps: int
+    weather: str
+    trackTemp: str
+    rainChance: str
+    safetyCar: str
+    focusDriver: str
+    headline: str
+    subline: str
+
+
 class DashboardDriver(BaseModel):
     code: str
     name: str
     team: str
-    team_color: str
+    teamColor: str
     position: int
     gap: str
     tyre: str
-    tyre_age: int
-    pit_stops: int
-    pace_delta: str
+    tyreAge: int
+    pitStops: int
+    paceDelta: str
     risk: Literal["Low", "Medium", "High"]
     status: str
 
@@ -93,12 +107,10 @@ class ForecastPreview(BaseModel):
     color: str
 
 
-class StrategySampleResponse(BaseModel):
-    race_state: RaceMetadata
-    headline: str
-    subline: str
+class StrategyDashboardResponse(BaseModel):
+    raceState: DashboardRaceState
     drivers: list[DashboardDriver]
-    timeline_events: list[TimelineEvent]
-    tyre_data: list[TyrePoint]
-    strategy_branches: list[StrategyBranch]
-    forecast_preview: list[ForecastPreview]
+    timelineEvents: list[TimelineEvent]
+    tyreData: list[TyrePoint]
+    strategyBranches: list[StrategyBranch]
+    forecastPreview: list[ForecastPreview]

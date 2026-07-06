@@ -4,12 +4,12 @@ This document is the running project journal for RaceIQ. Update it at the end of
 
 ## Current Phase
 
-Early MVP planning and scaffold cleanup.
+Early MVP dashboard and backend contract alignment.
 
 ## Current Status
 
-- Frontend: React, TypeScript, Vite, Tailwind, Recharts, Framer Motion, and Lucide are installed. The app currently renders a static hero screen.
-- Backend: FastAPI is installed. `GET /health` is implemented through `backend/app/routes/health.py` and registered in `backend/app/main.py`.
+- Frontend: React, TypeScript, Vite, Tailwind, Recharts, Framer Motion, and Lucide are installed. The app has a cinematic landing page, a routed strategy dashboard, route-level code splitting, and a typed mock API boundary.
+- Backend: FastAPI is installed. `GET /health`, `POST /predict`, `POST /replay`, and `GET /strategy/sample` are implemented with deterministic service logic and Pydantic schemas.
 - ML: data folders, pipeline script placeholders, and output placeholders exist. No model has been trained yet.
 - Data: static/sample data is planned first. PostgreSQL is planned for the forecasting phase when historical features, sentiment snapshots, model runs, and forecast outputs need persistence.
 - Docs: product requirements, architecture, roadmap, API, data ingestion, data dictionary, and model card docs exist.
@@ -46,6 +46,8 @@ Early MVP planning and scaffold cleanup.
 - Added a typed mock API boundary for the Strategy dashboard so page components no longer import fixture data directly.
 - Implemented deterministic FastAPI contracts for `POST /predict`, `POST /replay`, and `GET /strategy/sample` with Pydantic schemas and service-layer logic.
 - Added backend contract tests for `GET /health`, `POST /predict`, and `POST /replay`.
+- Aligned `GET /strategy/sample` with the frontend `StrategyDashboardData` contract so the future HTTP swap does not require a dashboard data-mapping rewrite.
+- Added backend contract coverage for the frontend-aligned sample strategy dashboard payload.
 
 ## Completed
 
@@ -54,30 +56,28 @@ Early MVP planning and scaffold cleanup.
 - Health route is implemented and organized under backend routes.
 - Frontend now has a usable mock-data RaceIQ dashboard.
 - Frontend has a first Playwright smoke test suite.
+- Backend has deterministic contracts for health, predict, replay, and the sample strategy dashboard.
 
 ## In Progress
 
-- Dashboard polish and data/API integration are ready for the next iteration.
+- Dashboard polish and future frontend-to-backend HTTP integration are ready for the next iteration.
 
 ## Not Started
 
-- Backend `/predict` endpoint.
-- Backend `/replay` endpoint.
 - Backend `/forecast/win-likelihood` endpoint.
-- Pydantic schemas for race state, prediction, replay, and forecast responses.
-- Sample race data fixtures.
+- Forecast schemas.
 - PostgreSQL schema and migrations.
 - Data ingestion scripts.
 - ML model training.
-- Automated tests.
+- Full-stack integration tests against a running backend.
 
 ## Next Recommended Steps
 
-1. Build the static mock-data dashboard in `frontend/`.
-2. Add sample race scenario fixtures.
-3. Implement typed backend schemas and deterministic `/predict`.
-4. Add `/replay` with sample timeline data.
-5. Design the PostgreSQL schema for forecasting before implementing ingestion.
+1. Wire the frontend mock API adapter to optionally call `GET /strategy/sample`.
+2. Add richer sample race scenarios.
+3. Add a frontend strategy interaction that can call `POST /predict`.
+4. Design the PostgreSQL schema for forecasting before implementing ingestion.
+5. Plan the first deterministic `/forecast/win-likelihood` baseline.
 
 ## Update Template
 
