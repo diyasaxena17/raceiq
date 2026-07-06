@@ -1,0 +1,78 @@
+from fastapi.testclient import TestClient
+
+from app.main import app
+
+client = TestClient(app)
+
+
+def test_health_returns_ok() -> None:
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
+def test_predict_returns_typed_recommendation() -> None:
+    response = client.post(
+        "/predict",
+        json={
+            "race_id": "silverstone-2026-sim",
+            "circuit": "Silverstone",
+            "lap": 27,
+            "total_laps": 52,
+            "weather": "Cloud cover building",
+            "track_temp_c": 31,
+            "rain_chance": 0.18,
+            "safety_car": "clear",
+            "focus_driver": "NOR",
+            "drivers": [
+                {
+                    "code": "NOR",
+                    "name": "Lando Norris",
+                    "team": "McLaren",
+                    "position": 6,
+                    "gap_seconds": 12.4,
+                    "tyre": "medium",
+                    "tyre_age": 18,
+                    "pit_stops": 0,
+                    "pace_delta": 0.47,
+                }
+            ],
+        },
+    )
+
+    assert response.status_code == 200
+
+    body = response.json()
+    assert body["recommendation"] in {"pit_now", "stay_out", "monitor"}
+    assert body["recommendation"] == "pit_now"
+    assert 0 <= body["confidence"] <= 1
+    assert body["risk_level"] in {"low", "medium", "high"}
+    assert isinstance(body["reason"], str)
+    assert isinstance(body["expected_time_delta"], float)
+    assert body["suggested_compound"] == "hard"
+
+
+def test_replay_returns_timeline_data() -> None:
+    response = client.post(
+        "/replay",
+        json={
+            "race_id": "silverstone-2026-sim",
+            "focus_driver": "NOR",
+            "from_lap": 18,
+            "to_lap": 27,
+        },
+    )
+
+    assert response.status_code == 200
+
+    body = response.json()
+    assert body["race_state"]["race_id"] == "silverstone-2026-sim"
+    assert body["race_state"]["lap"] == 27
+    assert body["race_state"]["total_laps"] == 52
+    assert body["race_state"]["weather"] == "Cloud cover building"
+    assert body["race_state"]["safety_car"] == "clear"
+
+    assert len(body["events"]) > 0
+    for event in body["events"]:
+        assert {"lap", "title", "detail", "type"} <= set(event)
