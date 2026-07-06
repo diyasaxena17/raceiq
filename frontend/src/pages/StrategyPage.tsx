@@ -1,26 +1,77 @@
 import { Activity, CloudSun, RadioTower, Trophy } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { CircuitPulse } from "../components/CircuitPulse"
 import { DriverStrategyCard } from "../components/DriverStrategyCard"
 import { PitRecommendationPanel } from "../components/PitRecommendationPanel"
 import { RaceTimeline } from "../components/RaceTimeline"
 import { TyreDegradationChart } from "../components/TyreDegradationChart"
-import {
-  drivers,
-  forecastPreview,
-  raceState,
-  strategyBranches,
-  timelineEvents,
-  tyreData,
-} from "../data/mockRace"
+import { getStrategyDashboard, type StrategyDashboardData } from "../lib/api"
 
 export function StrategyPage() {
-  const [activeLap, setActiveLap] = useState(raceState.lap)
+  const [dashboardData, setDashboardData] = useState<StrategyDashboardData | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [activeLap, setActiveLap] = useState<number | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function loadDashboard() {
+      try {
+        const data = await getStrategyDashboard()
+
+        if (!isMounted) {
+          return
+        }
+
+        setDashboardData(data)
+        setActiveLap(data.raceState.lap)
+      } catch {
+        if (isMounted) {
+          setError("Strategy data is unavailable. Try refreshing the dashboard.")
+        }
+      }
+    }
+
+    void loadDashboard()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const raceState = dashboardData?.raceState
   const focusDriver = useMemo(
-    () => drivers.find((driver) => driver.code === raceState.focusDriver),
-    [],
+    () =>
+      raceState && dashboardData
+        ? dashboardData.drivers.find((driver) => driver.code === raceState.focusDriver)
+        : undefined,
+    [dashboardData, raceState],
   )
+
+  if (error) {
+    return (
+      <section className="strategy-state-panel" aria-labelledby="strategy-error-title">
+        <p className="eyebrow live-eyebrow">
+          <span /> Strategy room
+        </p>
+        <h1 id="strategy-error-title">RaceIQ lost the timing feed.</h1>
+        <p>{error}</p>
+      </section>
+    )
+  }
+
+  if (!dashboardData || !raceState || activeLap === null) {
+    return (
+      <section className="strategy-state-panel" aria-labelledby="strategy-loading-title">
+        <p className="eyebrow live-eyebrow">
+          <span /> Strategy room
+        </p>
+        <h1 id="strategy-loading-title">Loading the pit wall.</h1>
+        <p>Pulling race state, tyre model, timing tower, and strategy branches.</p>
+      </section>
+    )
+  }
 
   return (
     <>
@@ -55,10 +106,10 @@ export function StrategyPage() {
 
       <section className="command-grid" aria-label="Race command dashboard">
         <div className="left-stack" id="strategy">
-          <PitRecommendationPanel branches={strategyBranches} />
+          <PitRecommendationPanel branches={dashboardData.strategyBranches} />
           <RaceTimeline
             activeLap={activeLap}
-            events={timelineEvents}
+            events={dashboardData.timelineEvents}
             onLapChange={setActiveLap}
             totalLaps={raceState.totalLaps}
           />
@@ -66,7 +117,7 @@ export function StrategyPage() {
 
         <div className="center-stack" id="track">
           <CircuitPulse activeLap={activeLap} totalLaps={raceState.totalLaps} />
-          <TyreDegradationChart data={tyreData} />
+          <TyreDegradationChart data={dashboardData.tyreData} />
         </div>
 
         <aside className="right-stack" aria-label="Driver and forecast panels">
@@ -79,7 +130,7 @@ export function StrategyPage() {
               <Activity aria-hidden="true" className="header-icon" />
             </div>
             <div className="driver-list">
-              {drivers.map((driver) => (
+              {dashboardData.drivers.map((driver) => (
                 <DriverStrategyCard
                   driver={driver}
                   isFocus={driver.code === raceState.focusDriver}
@@ -102,7 +153,7 @@ export function StrategyPage() {
               weather, car form, driver form, and sentiment.
             </p>
             <div className="forecast-bars">
-              {forecastPreview.map((team) => (
+              {dashboardData.forecastPreview.map((team) => (
                 <div className="forecast-row" key={team.label}>
                   <div>
                     <span>{team.label}</span>

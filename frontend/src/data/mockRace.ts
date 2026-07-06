@@ -39,7 +39,36 @@ export type StrategyBranch = {
   laps: string[]
 }
 
-export const raceState = {
+export type ForecastPreview = {
+  label: string
+  value: number
+  color: string
+}
+
+export type RaceState = {
+  race: string
+  session: string
+  lap: number
+  totalLaps: number
+  weather: string
+  trackTemp: string
+  rainChance: string
+  safetyCar: string
+  focusDriver: string
+  headline: string
+  subline: string
+}
+
+export type StrategyDashboardData = {
+  raceState: RaceState
+  drivers: DriverStrategy[]
+  timelineEvents: TimelineEvent[]
+  tyreData: TyrePoint[]
+  strategyBranches: StrategyBranch[]
+  forecastPreview: ForecastPreview[]
+}
+
+const raceState: RaceState = {
   race: "Silverstone Strategy Lab",
   session: "Race simulation",
   lap: 27,
@@ -53,7 +82,7 @@ export const raceState = {
   subline: "A mock pit wall built from race state, tyre life, and strategy branches.",
 }
 
-export const drivers: DriverStrategy[] = [
+const drivers: DriverStrategy[] = [
   {
     code: "NOR",
     name: "Lando Norris",
@@ -98,7 +127,7 @@ export const drivers: DriverStrategy[] = [
   },
 ]
 
-export const timelineEvents: TimelineEvent[] = [
+const timelineEvents: TimelineEvent[] = [
   {
     lap: 12,
     title: "Opening tyre phase settled",
@@ -131,7 +160,7 @@ export const timelineEvents: TimelineEvent[] = [
   },
 ]
 
-export const tyreData: TyrePoint[] = [
+const tyreData: TyrePoint[] = [
   { lap: 12, medium: 0.14, hard: 0.04, projected: 0.1 },
   { lap: 16, medium: 0.21, hard: 0.06, projected: 0.15 },
   { lap: 20, medium: 0.31, hard: 0.09, projected: 0.22 },
@@ -141,7 +170,7 @@ export const tyreData: TyrePoint[] = [
   { lap: 36, medium: 0.94, hard: 0.3, projected: 0.82 },
 ]
 
-export const strategyBranches: StrategyBranch[] = [
+const strategyBranches: StrategyBranch[] = [
   {
     label: "Pit this lap",
     tone: "green",
@@ -162,9 +191,18 @@ export const strategyBranches: StrategyBranch[] = [
   },
 ]
 
-export const forecastPreview = [
+const forecastPreview: ForecastPreview[] = [
   { label: "McLaren", value: 34, color: "#60a5fa" },
   { label: "Ferrari", value: 28, color: "#3b82f6" },
   { label: "Mercedes", value: 21, color: "#2563eb" },
   { label: "Red Bull", value: 17, color: "#93c5fd" },
 ]
+
+export const strategyDashboardFixture: StrategyDashboardData = {
+  raceState,
+  drivers,
+  timelineEvents,
+  tyreData,
+  strategyBranches,
+  forecastPreview,
+}

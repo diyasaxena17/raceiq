@@ -43,6 +43,7 @@ Early MVP planning and scaffold cleanup.
 - Added a routed frontend structure with a cinematic landing page at `/`, the pit-wall dashboard at `/strategy`, and planned surfaces at `/forecast` and `/methodology`.
 - Made the landing page more cinematic with a race-control visual scene.
 - Added route-level code splitting so the strategy dashboard loads as a separate bundle and the Vite chunk-size warning is resolved.
+- Added a typed mock API boundary for the Strategy dashboard so page components no longer import fixture data directly.
 
 ## Completed
 
