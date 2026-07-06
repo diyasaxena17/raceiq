@@ -89,6 +89,71 @@ Risk values:
 - `medium`
 - `high`
 
+## Predict Sample Request
+
+```http
+GET /predict/sample-request
+```
+
+This endpoint returns a normalized deterministic request body that can be posted directly to `POST /predict`. It exists so the frontend can call the prediction contract with the current sample race state without parsing display strings from the dashboard payload.
+
+Example response:
+
+```json
+{
+  "race_id": "silverstone-2026-sim",
+  "circuit": "Silverstone",
+  "lap": 27,
+  "total_laps": 52,
+  "weather": "Cloud cover building",
+  "track_temp_c": 31,
+  "rain_chance": 0.18,
+  "safety_car": "clear",
+  "focus_driver": "NOR",
+  "drivers": [
+    {
+      "code": "NOR",
+      "name": "Lando Norris",
+      "team": "McLaren",
+      "position": 6,
+      "gap_seconds": 12.4,
+      "tyre": "medium",
+      "tyre_age": 18,
+      "pit_stops": 0,
+      "pace_delta": 0.47
+    },
+    {
+      "code": "LEC",
+      "name": "Charles Leclerc",
+      "team": "Ferrari",
+      "position": 5,
+      "gap_seconds": 9.1,
+      "tyre": "medium",
+      "tyre_age": 16,
+      "pit_stops": 0,
+      "pace_delta": 0.33
+    },
+    {
+      "code": "HAM",
+      "name": "Lewis Hamilton",
+      "team": "Mercedes",
+      "position": 7,
+      "gap_seconds": 15.8,
+      "tyre": "hard",
+      "tyre_age": 7,
+      "pit_stops": 1,
+      "pace_delta": -0.12
+    }
+  ]
+}
+```
+
+Frontend usage:
+
+1. Request `GET /predict/sample-request`.
+2. POST the response body to `POST /predict`.
+3. Render the returned `PredictionResponse` in the recommendation panel.
+
 ### Frontend Predict Contract Notes
 
 The Strategy page should eventually call `POST /predict` from the existing dashboard state, but it should not wire the call directly from display strings yet. The current frontend `StrategyDashboardData` shape is optimized for UI rendering, while `POST /predict` expects normalized model input.
@@ -166,7 +231,7 @@ Current schema gaps before wiring from the Strategy page:
 - `trackTemp`, `rainChance`, `gap`, and `paceDelta` are display-formatted strings, so direct wiring would require parsing UI labels into numeric model inputs.
 - `safetyCar` and `tyre` use display casing, while `/predict` expects lowercase enum values.
 - The current `PitRecommendationPanel` renders static recommendation copy and does not accept a `PredictionResponse` prop yet.
-- The clean next step is to add a typed frontend request builder or enrich `/strategy/sample` with normalized prediction input alongside the display payload.
+- The clean next step is to add a typed frontend API call that uses `GET /predict/sample-request` before posting to `/predict`.
 
 ## Replay Race State
 

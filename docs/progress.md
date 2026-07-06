@@ -9,7 +9,7 @@ Early MVP dashboard and backend contract alignment.
 ## Current Status
 
 - Frontend: React, TypeScript, Vite, Tailwind, Recharts, Framer Motion, and Lucide are installed. The app has a cinematic landing page, a routed strategy dashboard, route-level code splitting, and a typed API boundary with local fixture fallback.
-- Backend: FastAPI is installed. `GET /health`, `POST /predict`, `POST /replay`, and `GET /strategy/sample` are implemented with deterministic service logic and Pydantic schemas.
+- Backend: FastAPI is installed. `GET /health`, `POST /predict`, `GET /predict/sample-request`, `POST /replay`, and `GET /strategy/sample` are implemented with deterministic service logic and Pydantic schemas.
 - ML: data folders, pipeline script placeholders, and output placeholders exist. No model has been trained yet.
 - Data: static/sample data is planned first. PostgreSQL is planned for the forecasting phase when historical features, sentiment snapshots, model runs, and forecast outputs need persistence.
 - Docs: product requirements, architecture, roadmap, API, data ingestion, data dictionary, and model card docs exist.
@@ -51,6 +51,7 @@ Early MVP dashboard and backend contract alignment.
 - Wired the frontend strategy dashboard API adapter to optionally call `GET /strategy/sample` when `VITE_RACEIQ_API_BASE_URL` is set.
 - Added local fixture fallback for backend downtime or unset backend configuration.
 - Added local Vite dev CORS origins to the FastAPI app.
+- Added `GET /predict/sample-request` so the frontend can request a normalized sample payload before posting to `POST /predict`.
 
 ## Completed
 
@@ -59,7 +60,7 @@ Early MVP dashboard and backend contract alignment.
 - Health route is implemented and organized under backend routes.
 - Frontend now has a usable mock-data RaceIQ dashboard.
 - Frontend has a first Playwright smoke test suite.
-- Backend has deterministic contracts for health, predict, replay, and the sample strategy dashboard.
+- Backend has deterministic contracts for health, predict, predict sample request, replay, and the sample strategy dashboard.
 - Strategy dashboard data can now come from the backend sample endpoint or the local fixture fallback.
 
 ## In Progress
@@ -77,7 +78,7 @@ Early MVP dashboard and backend contract alignment.
 
 ## Next Recommended Steps
 
-1. Add a frontend strategy interaction that can call `POST /predict`.
+1. Add a frontend strategy interaction that calls `GET /predict/sample-request` and then `POST /predict`.
 2. Add richer sample race scenarios.
 3. Add full-stack integration coverage for the optional backend sample data path.
 4. Design the PostgreSQL schema for forecasting before implementing ingestion.

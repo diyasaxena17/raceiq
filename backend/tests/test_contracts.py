@@ -53,6 +53,31 @@ def test_predict_returns_typed_recommendation() -> None:
     assert body["suggested_compound"] == "hard"
 
 
+def test_predict_sample_request_can_drive_prediction() -> None:
+    sample_response = client.get("/predict/sample-request")
+
+    assert sample_response.status_code == 200
+
+    sample_request = sample_response.json()
+    assert sample_request["race_id"] == "silverstone-2026-sim"
+    assert sample_request["circuit"] == "Silverstone"
+    assert sample_request["track_temp_c"] == 31.0
+    assert sample_request["rain_chance"] == 0.18
+    assert sample_request["safety_car"] == "clear"
+    assert sample_request["focus_driver"] == "NOR"
+
+    focus_driver = sample_request["drivers"][0]
+    assert focus_driver["code"] == "NOR"
+    assert focus_driver["gap_seconds"] == 12.4
+    assert focus_driver["tyre"] == "medium"
+    assert focus_driver["tyre_age"] == 18
+    assert focus_driver["pace_delta"] == 0.47
+
+    predict_response = client.post("/predict", json=sample_request)
+    assert predict_response.status_code == 200
+    assert predict_response.json()["recommendation"] == "pit_now"
+
+
 def test_replay_returns_timeline_data() -> None:
     response = client.post(
         "/replay",

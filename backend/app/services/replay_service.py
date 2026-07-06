@@ -1,8 +1,10 @@
 from app.schemas.race_state import (
     DashboardDriver,
     DashboardRaceState,
+    DriverRaceState,
     ForecastPreview,
     RaceMetadata,
+    RaceStateRequest,
     StrategyBranch,
     StrategyDashboardResponse,
     TimelineEvent,
@@ -56,6 +58,57 @@ SAMPLE_TIMELINE = [
         type="weather",
     ),
 ]
+
+SAMPLE_PREDICT_DRIVERS = [
+    DriverRaceState(
+        code="NOR",
+        name="Lando Norris",
+        team="McLaren",
+        position=6,
+        gap_seconds=12.4,
+        tyre="medium",
+        tyre_age=18,
+        pit_stops=0,
+        pace_delta=0.47,
+    ),
+    DriverRaceState(
+        code="LEC",
+        name="Charles Leclerc",
+        team="Ferrari",
+        position=5,
+        gap_seconds=9.1,
+        tyre="medium",
+        tyre_age=16,
+        pit_stops=0,
+        pace_delta=0.33,
+    ),
+    DriverRaceState(
+        code="HAM",
+        name="Lewis Hamilton",
+        team="Mercedes",
+        position=7,
+        gap_seconds=15.8,
+        tyre="hard",
+        tyre_age=7,
+        pit_stops=1,
+        pace_delta=-0.12,
+    ),
+]
+
+
+def get_sample_predict_request() -> RaceStateRequest:
+    return RaceStateRequest(
+        race_id=SAMPLE_RACE_STATE.race_id,
+        circuit=SAMPLE_RACE_STATE.circuit,
+        lap=SAMPLE_RACE_STATE.lap,
+        total_laps=SAMPLE_RACE_STATE.total_laps,
+        weather=SAMPLE_RACE_STATE.weather,
+        track_temp_c=SAMPLE_RACE_STATE.track_temp_c,
+        rain_chance=SAMPLE_RACE_STATE.rain_chance,
+        safety_car=SAMPLE_RACE_STATE.safety_car,
+        focus_driver=SAMPLE_RACE_STATE.focus_driver,
+        drivers=SAMPLE_PREDICT_DRIVERS,
+    )
 
 
 def get_replay(request: ReplayRequest) -> ReplayResponse:
