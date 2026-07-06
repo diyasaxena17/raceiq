@@ -239,7 +239,7 @@ Current schema gaps before wiring from the Strategy page:
 POST /replay
 ```
 
-This endpoint returns deterministic timeline events for a sample race replay.
+This endpoint returns deterministic timeline events for a sample race replay. The response keeps the original snake_case `race_state` and `events` fields for compatibility, and also includes frontend-ready camelCase fields: `replayState` and `timelineEvents`.
 
 Example request:
 
@@ -247,8 +247,8 @@ Example request:
 {
   "race_id": "silverstone-2026-sim",
   "focus_driver": "NOR",
-  "from_lap": 1,
-  "to_lap": 31
+  "from_lap": 18,
+  "to_lap": 27
 }
 ```
 
@@ -271,6 +271,41 @@ Example response:
   },
   "events": [
     {
+      "lap": 18,
+      "title": "Virtual safety car window",
+      "detail": "Pit loss drops by 5.2s, but the lead pack stays out.",
+      "type": "warning"
+    },
+    {
+      "lap": 27,
+      "title": "RaceIQ calls the decision lap",
+      "detail": "Norris can pit into clean air and attack on hard tyres.",
+      "type": "pit"
+    }
+  ],
+  "replayState": {
+    "raceId": "silverstone-2026-sim",
+    "race": "Silverstone Strategy Lab",
+    "session": "Race simulation",
+    "circuit": "Silverstone",
+    "currentLap": 27,
+    "totalLaps": 52,
+    "lapRange": {
+      "fromLap": 18,
+      "toLap": 27
+    },
+    "weather": "Cloud cover building",
+    "safetyCar": "clear",
+    "focusDriver": "NOR"
+  },
+  "timelineEvents": [
+    {
+      "lap": 18,
+      "title": "Virtual safety car window",
+      "detail": "Pit loss drops by 5.2s, but the lead pack stays out.",
+      "type": "warning"
+    },
+    {
       "lap": 27,
       "title": "RaceIQ calls the decision lap",
       "detail": "Norris can pit into clean air and attack on hard tyres.",
@@ -279,6 +314,14 @@ Example response:
   ]
 }
 ```
+
+Frontend timeline usage:
+
+- Use `replayState.currentLap` for the active lap.
+- Use `replayState.totalLaps` for the scrubber max.
+- Use `replayState.lapRange.fromLap` and `replayState.lapRange.toLap` to label filtered replay windows.
+- Use `replayState.weather` and `replayState.safetyCar` for session status displays.
+- Use `timelineEvents` for the `RaceTimeline` event list.
 
 ## Sample Strategy Dashboard
 

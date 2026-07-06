@@ -133,6 +133,8 @@ The first backend implementation can use deterministic rules. The frontend shoul
 
 During local development, the frontend reads `VITE_RACEIQ_API_BASE_URL`. When it is set to `http://localhost:8000`, `frontend/src/lib/api.ts` requests `GET /strategy/sample`; when it is unset or the request fails, the local fixture remains the fallback. The backend allows the Vite dev origins `http://localhost:5173` and `http://127.0.0.1:5173` through CORS for this handoff.
 
+`POST /replay` keeps the original snake_case `race_state` and `events` response fields for compatibility, and adds frontend-ready `replayState` and `timelineEvents` fields for the timeline UI. `replayState` includes the current lap, total laps, requested lap range, weather, safety car state, and focus driver.
+
 Forecasting endpoint planned after the first MVP:
 
 - `POST /forecast/win-likelihood`

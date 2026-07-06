@@ -10,7 +10,7 @@ from app.schemas.race_state import (
     TimelineEvent,
     TyrePoint,
 )
-from app.schemas.replay import ReplayRequest, ReplayResponse
+from app.schemas.replay import ReplayLapRange, ReplayRequest, ReplayResponse, ReplayState
 
 SAMPLE_RACE_STATE = RaceMetadata(
     race_id="silverstone-2026-sim",
@@ -119,7 +119,23 @@ def get_replay(request: ReplayRequest) -> ReplayResponse:
         if request.from_lap <= event.lap <= to_lap
     ]
 
-    return ReplayResponse(race_state=SAMPLE_RACE_STATE, events=events)
+    return ReplayResponse(
+        race_state=SAMPLE_RACE_STATE,
+        events=events,
+        replayState=ReplayState(
+            raceId=SAMPLE_RACE_STATE.race_id,
+            race=SAMPLE_RACE_STATE.race_name,
+            session=SAMPLE_RACE_STATE.session,
+            circuit=SAMPLE_RACE_STATE.circuit,
+            currentLap=SAMPLE_RACE_STATE.lap,
+            totalLaps=SAMPLE_RACE_STATE.total_laps,
+            lapRange=ReplayLapRange(fromLap=request.from_lap, toLap=to_lap),
+            weather=SAMPLE_RACE_STATE.weather,
+            safetyCar=SAMPLE_RACE_STATE.safety_car,
+            focusDriver=SAMPLE_RACE_STATE.focus_driver,
+        ),
+        timelineEvents=events,
+    )
 
 
 def get_strategy_sample() -> StrategyDashboardResponse:

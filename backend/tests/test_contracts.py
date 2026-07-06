@@ -98,7 +98,21 @@ def test_replay_returns_timeline_data() -> None:
     assert body["race_state"]["weather"] == "Cloud cover building"
     assert body["race_state"]["safety_car"] == "clear"
 
+    assert body["replayState"] == {
+        "raceId": "silverstone-2026-sim",
+        "race": "Silverstone Strategy Lab",
+        "session": "Race simulation",
+        "circuit": "Silverstone",
+        "currentLap": 27,
+        "totalLaps": 52,
+        "lapRange": {"fromLap": 18, "toLap": 27},
+        "weather": "Cloud cover building",
+        "safetyCar": "clear",
+        "focusDriver": "NOR",
+    }
+
     assert len(body["events"]) > 0
+    assert body["timelineEvents"] == body["events"]
     for event in body["events"]:
         assert {"lap", "title", "detail", "type"} <= set(event)
 

@@ -52,6 +52,7 @@ Early MVP dashboard and backend contract alignment.
 - Added local fixture fallback for backend downtime or unset backend configuration.
 - Added local Vite dev CORS origins to the FastAPI app.
 - Added `GET /predict/sample-request` so the frontend can request a normalized sample payload before posting to `POST /predict`.
+- Refined `POST /replay` with frontend-ready `replayState` and `timelineEvents` fields while keeping legacy `race_state` and `events`.
 
 ## Completed
 
@@ -61,6 +62,7 @@ Early MVP dashboard and backend contract alignment.
 - Frontend now has a usable mock-data RaceIQ dashboard.
 - Frontend has a first Playwright smoke test suite.
 - Backend has deterministic contracts for health, predict, predict sample request, replay, and the sample strategy dashboard.
+- Replay responses now include current lap, total laps, lap range, weather, safety car state, and timeline events for the future timeline UI.
 - Strategy dashboard data can now come from the backend sample endpoint or the local fixture fallback.
 
 ## In Progress
