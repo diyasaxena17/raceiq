@@ -79,8 +79,8 @@ Current state:
 
 - `src/App.tsx` owns the route shell with route-level code splitting.
 - The landing page and strategy dashboard are separate routes.
-- `src/lib/api.ts` exposes a typed mock API over `frontend/src/data/mockRace.ts`.
-- The strategy page currently consumes local deterministic mock data, not the backend yet.
+- `src/lib/api.ts` exposes a typed strategy dashboard API that can call the backend when `VITE_RACEIQ_API_BASE_URL` is set.
+- The strategy page falls back to local deterministic mock data when the backend base URL is unset or the request fails.
 
 ## Backend Architecture
 
@@ -130,6 +130,8 @@ Minimum MVP endpoints:
 The first backend implementation can use deterministic rules. The frontend should not need to know whether a recommendation came from rules or from a trained model.
 
 `GET /strategy/sample` is the bridge contract for the current dashboard. Its response intentionally mirrors the frontend `StrategyDashboardData` type from `frontend/src/data/mockRace.ts`, including camelCase keys such as `raceState`, `totalLaps`, `teamColor`, `timelineEvents`, `tyreData`, `strategyBranches`, and `forecastPreview`. Backend request schemas and replay metadata can remain Pythonic/snake_case where they are not directly replacing the frontend dashboard fixture.
+
+During local development, the frontend reads `VITE_RACEIQ_API_BASE_URL`. When it is set to `http://localhost:8000`, `frontend/src/lib/api.ts` requests `GET /strategy/sample`; when it is unset or the request fails, the local fixture remains the fallback. The backend allows the Vite dev origins `http://localhost:5173` and `http://127.0.0.1:5173` through CORS for this handoff.
 
 Forecasting endpoint planned after the first MVP:
 
@@ -226,7 +228,7 @@ Current caveats:
 - `dev-scripts/setup.sh` and `dev-scripts/run-dev.sh` are placeholders.
 - `docker-compose.yml` is empty.
 - Backend dependency installation is manual through `backend/requirements.txt`.
-- Frontend-to-backend HTTP wiring is intentionally deferred until the mock API contract is stable.
+- Frontend-to-backend HTTP wiring exists for the strategy sample endpoint, but full-stack integration tests are still planned.
 
 ## Deployment Shape
 

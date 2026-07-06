@@ -144,6 +144,12 @@ GET /strategy/sample
 
 This endpoint returns a deterministic sample payload for the current strategy dashboard. Its response shape intentionally matches the frontend `StrategyDashboardData` type in `frontend/src/data/mockRace.ts`, so the frontend can later move from local fixtures to HTTP without a UI data-mapping rewrite.
 
+Frontend usage:
+
+- Leave `VITE_RACEIQ_API_BASE_URL` unset to use the local fixture.
+- Set `VITE_RACEIQ_API_BASE_URL=http://localhost:8000` to have `frontend/src/lib/api.ts` request `GET /strategy/sample`.
+- If the request fails, the frontend falls back to the local fixture so the strategy dashboard remains usable during backend downtime.
+
 Example response:
 
 ```json
