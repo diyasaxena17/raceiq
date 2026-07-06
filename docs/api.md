@@ -24,23 +24,125 @@ Example response:
 
 ## Predict Pit Recommendation
 
-Planned endpoint:
-
 ```http
 POST /predict
 ```
 
-This endpoint will accept the current race state and return a pit recommendation, confidence score, and explanation.
+This endpoint accepts the current race state and returns a deterministic pit recommendation. The implementation is rules-based for now; no ML model is loaded yet.
+
+Example request:
+
+```json
+{
+  "race_id": "silverstone-2026-sim",
+  "circuit": "Silverstone",
+  "lap": 27,
+  "total_laps": 52,
+  "weather": "Cloud cover building",
+  "track_temp_c": 31,
+  "rain_chance": 0.18,
+  "safety_car": "clear",
+  "focus_driver": "NOR",
+  "drivers": [
+    {
+      "code": "NOR",
+      "name": "Lando Norris",
+      "team": "McLaren",
+      "position": 6,
+      "gap_seconds": 12.4,
+      "tyre": "medium",
+      "tyre_age": 18,
+      "pit_stops": 0,
+      "pace_delta": 0.47
+    }
+  ]
+}
+```
+
+Example response:
+
+```json
+{
+  "recommendation": "pit_now",
+  "confidence": 0.86,
+  "reason": "Tyre age and recent pace loss suggest the current stint is near the cliff.",
+  "risk_level": "medium",
+  "expected_time_delta": 4.8,
+  "suggested_compound": "hard",
+  "top_factors": [
+    "high tyre age",
+    "pace loss above threshold",
+    "hard tyre recovery window"
+  ]
+}
+```
+
+Recommendation values:
+
+- `pit_now`
+- `stay_out`
+- `monitor`
+
+Risk values:
+
+- `low`
+- `medium`
+- `high`
 
 ## Replay Race State
-
-Planned endpoint:
 
 ```http
 POST /replay
 ```
 
-This endpoint will replay or summarize race state changes for the dashboard timeline.
+This endpoint returns deterministic timeline events for a sample race replay.
+
+Example request:
+
+```json
+{
+  "race_id": "silverstone-2026-sim",
+  "focus_driver": "NOR",
+  "from_lap": 1,
+  "to_lap": 31
+}
+```
+
+Example response:
+
+```json
+{
+  "race_state": {
+    "race_id": "silverstone-2026-sim",
+    "race_name": "Silverstone Strategy Lab",
+    "session": "Race simulation",
+    "circuit": "Silverstone",
+    "lap": 27,
+    "total_laps": 52,
+    "weather": "Cloud cover building",
+    "track_temp_c": 31,
+    "rain_chance": 0.18,
+    "safety_car": "clear",
+    "focus_driver": "NOR"
+  },
+  "events": [
+    {
+      "lap": 27,
+      "title": "RaceIQ calls the decision lap",
+      "detail": "Norris can pit into clean air and attack on hard tyres.",
+      "type": "pit"
+    }
+  ]
+}
+```
+
+## Sample Strategy Dashboard
+
+```http
+GET /strategy/sample
+```
+
+This endpoint returns a backend-shaped sample payload for the current strategy dashboard. It exists to help the frontend move from local fixtures toward a real API without adding a database yet.
 
 ## Forecast Win Likelihood
 
@@ -78,4 +180,4 @@ Example response shape:
 
 ## MVP API Rule
 
-Only `/health` and one prediction-style endpoint are required for the first backend pass. Win-likelihood forecasting is planned for a later sprint after the data model exists.
+The first backend pass implements `/health`, `/predict`, `/replay`, and `/strategy/sample` with deterministic mock data. Win-likelihood forecasting is planned for a later sprint after the data model exists.

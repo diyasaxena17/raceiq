@@ -44,6 +44,7 @@ Early MVP planning and scaffold cleanup.
 - Made the landing page more cinematic with a race-control visual scene.
 - Added route-level code splitting so the strategy dashboard loads as a separate bundle and the Vite chunk-size warning is resolved.
 - Added a typed mock API boundary for the Strategy dashboard so page components no longer import fixture data directly.
+- Implemented deterministic FastAPI contracts for `POST /predict`, `POST /replay`, and `GET /strategy/sample` with Pydantic schemas and service-layer logic.
 
 ## Completed
 

@@ -111,8 +111,9 @@ Intended backend modules:
 Current state:
 
 - `app/routes/health.py` defines `GET /health`, and `app/main.py` registers it.
-- Predict, replay, schema, and service files exist but are empty.
-- Health is the only registered router.
+- `app/routes/predict.py` defines `POST /predict`, backed by deterministic strategy rules.
+- `app/routes/replay.py` defines `POST /replay` and `GET /strategy/sample`, backed by local sample data.
+- Pydantic schemas exist for race state, prediction, replay, and sample dashboard responses.
 - No tests are present.
 
 ## API Boundary
@@ -124,6 +125,7 @@ Minimum MVP endpoints:
 - `GET /health`
 - `POST /predict`
 - `POST /replay`
+- `GET /strategy/sample`
 
 The first backend implementation can use deterministic rules. The frontend should not need to know whether a recommendation came from rules or from a trained model.
 
@@ -246,7 +248,7 @@ No database is required for the first complete pit strategy demo. PostgreSQL is 
 ## Immediate Technical Risks
 
 - The docs and file names imply more functionality than currently exists.
-- Predict, replay, schema, and service files are scaffolded but not connected.
+- Backend tests are not yet committed, though the current routes have been checked with compile/import and in-process requests.
 - ML pipeline scripts and outputs are placeholders, so model claims should stay conservative.
 - Forecasting requires careful data quality work because sentiment, weather, and car performance features can be noisy or unavailable.
 - No automated tests currently protect API contracts or frontend rendering.
