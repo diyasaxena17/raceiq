@@ -89,6 +89,85 @@ Risk values:
 - `medium`
 - `high`
 
+### Frontend Predict Contract Notes
+
+The Strategy page should eventually call `POST /predict` from the existing dashboard state, but it should not wire the call directly from display strings yet. The current frontend `StrategyDashboardData` shape is optimized for UI rendering, while `POST /predict` expects normalized model input.
+
+Recommended request generated from the current sample dashboard:
+
+```json
+{
+  "race_id": "silverstone-2026-sim",
+  "circuit": "Silverstone",
+  "lap": 27,
+  "total_laps": 52,
+  "weather": "Cloud cover building",
+  "track_temp_c": 31,
+  "rain_chance": 0.18,
+  "safety_car": "clear",
+  "focus_driver": "NOR",
+  "drivers": [
+    {
+      "code": "NOR",
+      "name": "Lando Norris",
+      "team": "McLaren",
+      "position": 6,
+      "gap_seconds": 12.4,
+      "tyre": "medium",
+      "tyre_age": 18,
+      "pit_stops": 0,
+      "pace_delta": 0.47
+    },
+    {
+      "code": "LEC",
+      "name": "Charles Leclerc",
+      "team": "Ferrari",
+      "position": 5,
+      "gap_seconds": 9.1,
+      "tyre": "medium",
+      "tyre_age": 16,
+      "pit_stops": 0,
+      "pace_delta": 0.33
+    },
+    {
+      "code": "HAM",
+      "name": "Lewis Hamilton",
+      "team": "Mercedes",
+      "position": 7,
+      "gap_seconds": 15.8,
+      "tyre": "hard",
+      "tyre_age": 7,
+      "pit_stops": 1,
+      "pace_delta": -0.12
+    }
+  ]
+}
+```
+
+Frontend mapping rules for the current dashboard data:
+
+- `raceState.lap` -> `lap`
+- `raceState.totalLaps` -> `total_laps`
+- `raceState.weather` -> `weather`
+- `raceState.focusDriver` -> `focus_driver`
+- `driver.position` -> `position`
+- `driver.tyreAge` -> `tyre_age`
+- `driver.pitStops` -> `pit_stops`
+- `driver.tyre` -> lowercase `tyre`
+- `driver.gap` display strings like `"+12.4s"` -> numeric `gap_seconds`
+- `driver.paceDelta` display strings like `"+0.47s"` -> numeric `pace_delta`
+- `raceState.trackTemp` display strings like `"31 C"` -> numeric `track_temp_c`
+- `raceState.rainChance` display strings like `"18%"` -> decimal `rain_chance`
+- `raceState.safetyCar` display strings like `"Clear"` -> backend enum `clear`
+
+Current schema gaps before wiring from the Strategy page:
+
+- `StrategyDashboardData` does not include stable `race_id` or `circuit` fields; the frontend would need to hardcode or infer them from `raceState.race`.
+- `trackTemp`, `rainChance`, `gap`, and `paceDelta` are display-formatted strings, so direct wiring would require parsing UI labels into numeric model inputs.
+- `safetyCar` and `tyre` use display casing, while `/predict` expects lowercase enum values.
+- The current `PitRecommendationPanel` renders static recommendation copy and does not accept a `PredictionResponse` prop yet.
+- The clean next step is to add a typed frontend request builder or enrich `/strategy/sample` with normalized prediction input alongside the display payload.
+
 ## Replay Race State
 
 ```http
