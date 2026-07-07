@@ -8,19 +8,22 @@ import {
   YAxis,
 } from "recharts"
 
-import type { TyrePoint } from "../data/mockRace"
+import type { Compound, TyrePoint } from "../data/mockRace"
 
 type TyreDegradationChartProps = {
+  compound: Compound
   data: TyrePoint[]
 }
 
-export function TyreDegradationChart({ data }: TyreDegradationChartProps) {
+export function TyreDegradationChart({ compound, data }: TyreDegradationChartProps) {
+  const latestPoint = data.at(-1)
+
   return (
     <section className="panel tyre-panel" aria-labelledby="tyre-title">
       <div className="panel-header">
         <div>
           <p className="eyebrow">Tyre model</p>
-          <h2 id="tyre-title">Medium compound is near the edge</h2>
+          <h2 id="tyre-title">{compound} compound pressure</h2>
         </div>
         <div className="tyre-orbit" aria-hidden="true">
           <span />
@@ -30,21 +33,21 @@ export function TyreDegradationChart({ data }: TyreDegradationChartProps) {
       <div className="tyre-readout">
         <div className="tyre-visual">
           <div className="tyre-ring">
-            <span>MED</span>
+            <span>{compound.slice(0, 3).toUpperCase()}</span>
           </div>
         </div>
         <div className="tyre-stats">
           <div>
             <span>Pace loss</span>
-            <strong>+0.53s/lap</strong>
+            <strong>+{(latestPoint?.medium ?? 0).toFixed(2)}s/lap</strong>
           </div>
           <div>
             <span>Estimated life</span>
-            <strong>3 laps</strong>
+            <strong>{Math.max(2, Math.round(8 - (latestPoint?.projected ?? 0) * 6))} laps</strong>
           </div>
           <div>
             <span>Cliff risk</span>
-            <strong>High</strong>
+            <strong>{(latestPoint?.projected ?? 0) > 0.6 ? "High" : "Medium"}</strong>
           </div>
         </div>
       </div>

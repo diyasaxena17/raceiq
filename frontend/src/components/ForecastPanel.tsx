@@ -1,11 +1,13 @@
 import { RadioTower, Trophy } from "lucide-react"
 
+import type { ForecastPreview } from "../data/mockRace"
 import type { WinLikelihoodResponse, WinLikelihoodResult } from "../lib/api"
 
 type ForecastPanelProps = {
   forecast: WinLikelihoodResponse | null
   isFallback: boolean
   isLoading: boolean
+  scenarioPreview: ForecastPreview[]
 }
 
 function formatProbability(value: number) {
@@ -36,7 +38,12 @@ function getStatusLabel(isLoading: boolean, source: WinLikelihoodResult["source"
     : "Backend forecast contract is live."
 }
 
-export function ForecastPanel({ forecast, isFallback, isLoading }: ForecastPanelProps) {
+export function ForecastPanel({
+  forecast,
+  isFallback,
+  isLoading,
+  scenarioPreview,
+}: ForecastPanelProps) {
   const source: WinLikelihoodResult["source"] = isFallback ? "fallback" : "backend"
   const topTeams = forecast?.team_probabilities.slice(0, 3) ?? []
   const topDrivers = forecast?.driver_probabilities.slice(0, 3) ?? []
@@ -82,6 +89,26 @@ export function ForecastPanel({ forecast, isFallback, isLoading }: ForecastPanel
               </div>
               <div className="bar-track">
                 <span style={{ width: team ? `${Math.round(team.probability * 100)}%` : "18%" }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="forecast-section" aria-label="Scenario forecast preview">
+        <div className="forecast-section-heading">
+          <h3>Scenario preview</h3>
+          <span>selected race</span>
+        </div>
+        <div className="forecast-bars">
+          {scenarioPreview.map((team) => (
+            <div className="forecast-row" key={team.label}>
+              <div>
+                <span>{team.label}</span>
+                <strong>{team.value}%</strong>
+              </div>
+              <div className="bar-track">
+                <span style={{ background: team.color, width: `${team.value}%` }} />
               </div>
             </div>
           ))}

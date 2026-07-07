@@ -2,10 +2,11 @@ import { Gauge, MapPinned } from "lucide-react"
 
 type CircuitPulseProps = {
   activeLap: number
+  circuitName: string
   totalLaps: number
 }
 
-export function CircuitPulse({ activeLap, totalLaps }: CircuitPulseProps) {
+export function CircuitPulse({ activeLap, circuitName, totalLaps }: CircuitPulseProps) {
   const progress = Math.round((activeLap / totalLaps) * 100)
 
   return (
@@ -13,7 +14,7 @@ export function CircuitPulse({ activeLap, totalLaps }: CircuitPulseProps) {
       <div className="panel-header">
         <div>
           <p className="eyebrow">Track model</p>
-          <h2 id="circuit-title">Silverstone pulse map</h2>
+          <h2 id="circuit-title">{circuitName} pulse map</h2>
         </div>
         <MapPinned aria-hidden="true" className="header-icon" />
       </div>

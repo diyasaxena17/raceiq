@@ -7,69 +7,32 @@ import { ForecastPanel } from "../components/ForecastPanel"
 import { PitRecommendationPanel } from "../components/PitRecommendationPanel"
 import { RaceTimeline } from "../components/RaceTimeline"
 import { TyreDegradationChart } from "../components/TyreDegradationChart"
+import { raceScenarios } from "../data/mockRace"
 import {
-  getPitPrediction,
-  getRaceReplay,
-  getStrategyDashboard,
   getWinLikelihoodForecast,
-  type PredictionResponse,
-  type PitPredictionResult,
-  type ReplayResponse,
-  type ReplayResult,
-  type StrategyDashboardData,
   type WinLikelihoodResponse,
   type WinLikelihoodResult,
 } from "../lib/api"
 
 export function StrategyPage() {
-  const [dashboardData, setDashboardData] = useState<StrategyDashboardData | null>(null)
-  const [prediction, setPrediction] = useState<PredictionResponse | null>(null)
-  const [predictionSource, setPredictionSource] =
-    useState<PitPredictionResult["source"]>("fallback")
-  const [isPredictionLoading, setIsPredictionLoading] = useState(true)
+  const [selectedScenarioId, setSelectedScenarioId] = useState(raceScenarios[0].id)
   const [forecast, setForecast] = useState<WinLikelihoodResponse | null>(null)
   const [forecastSource, setForecastSource] =
     useState<WinLikelihoodResult["source"]>("fallback")
   const [isForecastLoading, setIsForecastLoading] = useState(true)
-  const [replay, setReplay] = useState<ReplayResponse | null>(null)
-  const [replaySource, setReplaySource] = useState<ReplayResult["source"]>("fallback")
-  const [isReplayLoading, setIsReplayLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [activeLap, setActiveLap] = useState<number | null>(null)
+  const [activeLap, setActiveLap] = useState(raceScenarios[0].data.raceState.lap)
+
+  const selectedScenario = useMemo(
+    () =>
+      raceScenarios.find((scenario) => scenario.id === selectedScenarioId) ?? raceScenarios[0],
+    [selectedScenarioId],
+  )
+  const dashboardData = selectedScenario.data
+  const raceState = dashboardData.raceState
+  const prediction = selectedScenario.prediction
 
   useEffect(() => {
     let isMounted = true
-
-    async function loadDashboard() {
-      try {
-        const data = await getStrategyDashboard()
-
-        if (!isMounted) {
-          return
-        }
-
-        setDashboardData(data)
-        setActiveLap(data.raceState.lap)
-      } catch {
-        if (isMounted) {
-          setError("Strategy data is unavailable. Try refreshing the dashboard.")
-        }
-      }
-    }
-
-    async function loadPrediction() {
-      setIsPredictionLoading(true)
-
-      const pitPrediction = await getPitPrediction()
-
-      if (!isMounted) {
-        return
-      }
-
-      setPrediction(pitPrediction.prediction)
-      setPredictionSource(pitPrediction.source)
-      setIsPredictionLoading(false)
-    }
 
     async function loadForecast() {
       setIsForecastLoading(true)
@@ -85,64 +48,28 @@ export function StrategyPage() {
       setIsForecastLoading(false)
     }
 
-    async function loadReplay() {
-      setIsReplayLoading(true)
-
-      const raceReplay = await getRaceReplay()
-
-      if (!isMounted) {
-        return
-      }
-
-      setReplay(raceReplay.replay)
-      setReplaySource(raceReplay.source)
-      setActiveLap((currentLap) => currentLap ?? raceReplay.replay.replayState.currentLap)
-      setIsReplayLoading(false)
-    }
-
-    void loadDashboard()
-    void loadPrediction()
     void loadForecast()
-    void loadReplay()
 
     return () => {
       isMounted = false
     }
   }, [])
 
-  const raceState = dashboardData?.raceState
   const focusDriver = useMemo(
     () =>
-      raceState && dashboardData
-        ? dashboardData.drivers.find((driver) => driver.code === raceState.focusDriver)
-        : undefined,
+      dashboardData.drivers.find((driver) => driver.code === raceState.focusDriver),
     [dashboardData, raceState],
   )
-  const timelineEvents = replay?.timelineEvents ?? dashboardData?.timelineEvents ?? []
-  const timelineTotalLaps = replay?.replayState.totalLaps ?? raceState?.totalLaps ?? 0
 
-  if (error) {
-    return (
-      <section className="strategy-state-panel" aria-labelledby="strategy-error-title">
-        <p className="eyebrow live-eyebrow">
-          <span /> Strategy room
-        </p>
-        <h1 id="strategy-error-title">RaceIQ lost the timing feed.</h1>
-        <p>{error}</p>
-      </section>
-    )
-  }
+  function selectScenario(scenarioId: string) {
+    const nextScenario = raceScenarios.find((scenario) => scenario.id === scenarioId)
 
-  if (!dashboardData || !raceState || activeLap === null) {
-    return (
-      <section className="strategy-state-panel" aria-labelledby="strategy-loading-title">
-        <p className="eyebrow live-eyebrow">
-          <span /> Strategy room
-        </p>
-        <h1 id="strategy-loading-title">Loading the pit wall.</h1>
-        <p>Pulling race state, tyre model, timing tower, and strategy branches.</p>
-      </section>
-    )
+    if (!nextScenario) {
+      return
+    }
+
+    setSelectedScenarioId(scenarioId)
+    setActiveLap(nextScenario.data.raceState.lap)
   }
 
   return (
@@ -157,6 +84,10 @@ export function StrategyPage() {
         </div>
 
         <div className="session-strip" aria-label="Session summary">
+          <div>
+            <span>Circuit</span>
+            <strong>{raceState.circuit}</strong>
+          </div>
           <div>
             <span>Session</span>
             <strong>{raceState.session}</strong>
@@ -176,27 +107,51 @@ export function StrategyPage() {
         </div>
       </section>
 
+      <section className="scenario-panel" aria-label="Race scenarios">
+        {raceScenarios.map((scenario) => {
+          const isSelected = scenario.id === selectedScenarioId
+
+          return (
+            <button
+              aria-pressed={isSelected}
+              className={`scenario-button ${isSelected ? "is-selected" : ""}`}
+              key={scenario.id}
+              onClick={() => selectScenario(scenario.id)}
+              type="button"
+            >
+              <span>{scenario.label}</span>
+              <strong>{scenario.data.raceState.circuit}</strong>
+              <small>{scenario.summary}</small>
+            </button>
+          )
+        })}
+      </section>
+
       <section className="command-grid" aria-label="Race command dashboard">
         <div className="left-stack" id="strategy">
           <PitRecommendationPanel
             branches={dashboardData.strategyBranches}
-            isFallback={predictionSource === "fallback"}
-            isLoading={isPredictionLoading}
+            isFallback
+            isLoading={false}
             prediction={prediction}
           />
           <RaceTimeline
             activeLap={activeLap}
-            events={timelineEvents}
-            isFallback={replaySource === "fallback"}
-            isLoading={isReplayLoading}
+            events={dashboardData.timelineEvents}
+            isFallback
+            isLoading={false}
             onLapChange={setActiveLap}
-            totalLaps={timelineTotalLaps}
+            totalLaps={raceState.totalLaps}
           />
         </div>
 
         <div className="center-stack" id="track">
-          <CircuitPulse activeLap={activeLap} totalLaps={raceState.totalLaps} />
-          <TyreDegradationChart data={dashboardData.tyreData} />
+          <CircuitPulse
+            activeLap={activeLap}
+            circuitName={raceState.circuit}
+            totalLaps={raceState.totalLaps}
+          />
+          <TyreDegradationChart compound={focusDriver?.tyre ?? "Medium"} data={dashboardData.tyreData} />
         </div>
 
         <aside className="right-stack" aria-label="Driver and forecast panels">
@@ -223,6 +178,7 @@ export function StrategyPage() {
             forecast={forecast}
             isFallback={forecastSource === "fallback"}
             isLoading={isForecastLoading}
+            scenarioPreview={dashboardData.forecastPreview}
           />
 
           <section className="panel weather-panel" aria-labelledby="weather-title">
@@ -240,12 +196,15 @@ export function StrategyPage() {
               </div>
               <div>
                 <span>Window</span>
-                <strong>L31-L35</strong>
+                <strong>
+                  L{Math.min(raceState.lap + 2, raceState.totalLaps)}-L
+                  {Math.min(raceState.lap + 6, raceState.totalLaps)}
+                </strong>
               </div>
             </div>
             <div className="signal-note">
               <RadioTower aria-hidden="true" />
-              <span>{focusDriver?.code} is inside the final dry-tyre window.</span>
+              <span>{focusDriver?.code} is inside the live scenario decision window.</span>
             </div>
           </section>
         </aside>

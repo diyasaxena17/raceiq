@@ -12,8 +12,8 @@ type PitRecommendationPanelProps = {
 
 const recommendationLabels = {
   monitor: "Monitor the window",
-  pit_now: "Bring Norris in now",
-  stay_out: "Keep Norris out",
+  pit_now: "Box this lap",
+  stay_out: "Stay out",
 }
 
 const recommendationCopy = {

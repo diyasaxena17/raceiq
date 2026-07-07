@@ -60,6 +60,7 @@ Early MVP dashboard and backend contract alignment.
 - Replaced the static Strategy page forecast preview with a forecast panel that calls `getWinLikelihoodForecast()` and renders probabilities, confidence, top factors, data freshness, and fallback state.
 - Wired the Strategy page timeline to `POST /replay` through the typed frontend API layer, with dashboard timeline fallback.
 - Updated the README to reflect the current routed frontend, deterministic backend contracts, local run commands, testing commands, and `VITE_RACEIQ_API_BASE_URL` behavior.
+- Added a frontend race-scenario system with Silverstone, Monaco, and Spa scenarios that drive the Strategy page cards, recommendation, timeline, tyre chart, circuit panel, and forecast preview.
 
 ## Completed
 
@@ -75,6 +76,7 @@ Early MVP dashboard and backend contract alignment.
 - The Strategy page now exposes deterministic forecast data through a visible forecast panel.
 - The Strategy timeline can now use backend replay data or dashboard timeline fallback while preserving scrubber interaction.
 - The README now matches the current project state instead of describing the old static scaffold.
+- The Strategy dashboard can now switch between three deterministic race scenarios without changing routes.
 
 ## In Progress
 
