@@ -9,13 +9,30 @@ import { RaceTimeline } from "../components/RaceTimeline"
 import { TyreDegradationChart } from "../components/TyreDegradationChart"
 import { raceScenarios } from "../data/mockRace"
 import {
+  getPitPrediction,
+  getRaceReplay,
+  getStrategyDashboard,
   getWinLikelihoodForecast,
+  type PitPredictionResult,
+  type PredictionResponse,
+  type ReplayResponse,
+  type ReplayResult,
+  type StrategyDashboardData,
   type WinLikelihoodResponse,
   type WinLikelihoodResult,
 } from "../lib/api"
 
 export function StrategyPage() {
   const [selectedScenarioId, setSelectedScenarioId] = useState(raceScenarios[0].id)
+  const [backendDashboardData, setBackendDashboardData] =
+    useState<StrategyDashboardData | null>(null)
+  const [backendPrediction, setBackendPrediction] = useState<PredictionResponse | null>(null)
+  const [predictionSource, setPredictionSource] =
+    useState<PitPredictionResult["source"]>("fallback")
+  const [isPredictionLoading, setIsPredictionLoading] = useState(true)
+  const [replay, setReplay] = useState<ReplayResponse | null>(null)
+  const [replaySource, setReplaySource] = useState<ReplayResult["source"]>("fallback")
+  const [isReplayLoading, setIsReplayLoading] = useState(true)
   const [forecast, setForecast] = useState<WinLikelihoodResponse | null>(null)
   const [forecastSource, setForecastSource] =
     useState<WinLikelihoodResult["source"]>("fallback")
@@ -27,12 +44,42 @@ export function StrategyPage() {
       raceScenarios.find((scenario) => scenario.id === selectedScenarioId) ?? raceScenarios[0],
     [selectedScenarioId],
   )
-  const dashboardData = selectedScenario.data
+  const usesBackendScenario = selectedScenario.id === raceScenarios[0].id
+  const dashboardData =
+    usesBackendScenario && backendDashboardData ? backendDashboardData : selectedScenario.data
   const raceState = dashboardData.raceState
-  const prediction = selectedScenario.prediction
+  const prediction =
+    usesBackendScenario && backendPrediction ? backendPrediction : selectedScenario.prediction
+  const timelineEvents =
+    usesBackendScenario && replay ? replay.timelineEvents : dashboardData.timelineEvents
+  const timelineTotalLaps =
+    usesBackendScenario && replay ? replay.replayState.totalLaps : raceState.totalLaps
 
   useEffect(() => {
     let isMounted = true
+
+    async function loadBackendScenarioData() {
+      setIsPredictionLoading(true)
+      setIsReplayLoading(true)
+
+      const [strategyDashboard, pitPrediction, raceReplay] = await Promise.all([
+        getStrategyDashboard(),
+        getPitPrediction(),
+        getRaceReplay(),
+      ])
+
+      if (!isMounted) {
+        return
+      }
+
+      setBackendDashboardData(strategyDashboard)
+      setBackendPrediction(pitPrediction.prediction)
+      setPredictionSource(pitPrediction.source)
+      setReplay(raceReplay.replay)
+      setReplaySource(raceReplay.source)
+      setIsPredictionLoading(false)
+      setIsReplayLoading(false)
+    }
 
     async function loadForecast() {
       setIsForecastLoading(true)
@@ -48,6 +95,7 @@ export function StrategyPage() {
       setIsForecastLoading(false)
     }
 
+    void loadBackendScenarioData()
     void loadForecast()
 
     return () => {
@@ -131,17 +179,17 @@ export function StrategyPage() {
         <div className="left-stack" id="strategy">
           <PitRecommendationPanel
             branches={dashboardData.strategyBranches}
-            isFallback
-            isLoading={false}
+            isFallback={!usesBackendScenario || predictionSource === "fallback"}
+            isLoading={usesBackendScenario && isPredictionLoading}
             prediction={prediction}
           />
           <RaceTimeline
             activeLap={activeLap}
-            events={dashboardData.timelineEvents}
-            isFallback
-            isLoading={false}
+            events={timelineEvents}
+            isFallback={!usesBackendScenario || replaySource === "fallback"}
+            isLoading={usesBackendScenario && isReplayLoading}
             onLapChange={setActiveLap}
-            totalLaps={raceState.totalLaps}
+            totalLaps={timelineTotalLaps}
           />
         </div>
 

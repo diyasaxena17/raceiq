@@ -168,6 +168,7 @@ def test_strategy_sample_matches_frontend_dashboard_contract() -> None:
 
     race_state = body["raceState"]
     assert race_state["race"] == "Silverstone Strategy Lab"
+    assert race_state["circuit"] == "Silverstone"
     assert race_state["totalLaps"] == 52
     assert race_state["trackTemp"] == "31 C"
     assert race_state["rainChance"] == "18%"

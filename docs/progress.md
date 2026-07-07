@@ -61,6 +61,7 @@ Early MVP dashboard and backend contract alignment.
 - Wired the Strategy page timeline to `POST /replay` through the typed frontend API layer, with dashboard timeline fallback.
 - Updated the README to reflect the current routed frontend, deterministic backend contracts, local run commands, testing commands, and `VITE_RACEIQ_API_BASE_URL` behavior.
 - Added a frontend race-scenario system with Silverstone, Monaco, and Spa scenarios that drive the Strategy page cards, recommendation, timeline, tyre chart, circuit panel, and forecast preview.
+- Preserved the optional backend strategy, prediction, and replay calls for the default Silverstone scenario while keeping additional scenarios deterministic and local.
 
 ## Completed
 

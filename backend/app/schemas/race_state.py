@@ -51,6 +51,7 @@ class RaceMetadata(BaseModel):
 class DashboardRaceState(BaseModel):
     race: str
     session: str
+    circuit: str
     lap: int
     totalLaps: int
     weather: str

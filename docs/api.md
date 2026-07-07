@@ -351,6 +351,7 @@ Example response:
   "raceState": {
     "race": "Silverstone Strategy Lab",
     "session": "Race simulation",
+    "circuit": "Silverstone",
     "lap": 27,
     "totalLaps": 52,
     "weather": "Cloud cover building",
