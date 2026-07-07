@@ -1,9 +1,10 @@
 import {
   strategyDashboardFixture,
+  type TimelineEvent,
   type StrategyDashboardData,
 } from "../data/mockRace"
 
-export type { StrategyDashboardData } from "../data/mockRace"
+export type { StrategyDashboardData, TimelineEvent } from "../data/mockRace"
 
 export type TyreCompound = "soft" | "medium" | "hard" | "intermediate" | "wet"
 export type SafetyCarState = "clear" | "vsc" | "safety_car"
@@ -45,6 +46,57 @@ export type PredictionResponse = {
 
 export type PitPredictionResult = {
   prediction: PredictionResponse
+  source: "backend" | "fallback"
+}
+
+export type RaceMetadata = {
+  race_id: string
+  race_name: string
+  session: string
+  circuit: string
+  lap: number
+  total_laps: number
+  weather: string
+  track_temp_c: number
+  rain_chance: number
+  safety_car: SafetyCarState
+  focus_driver: string
+}
+
+export type ReplayRequest = {
+  race_id: string
+  focus_driver: string
+  from_lap: number
+  to_lap: number | null
+}
+
+export type ReplayLapRange = {
+  fromLap: number
+  toLap: number
+}
+
+export type ReplayState = {
+  raceId: string
+  race: string
+  session: string
+  circuit: string
+  currentLap: number
+  totalLaps: number
+  lapRange: ReplayLapRange
+  weather: string
+  safetyCar: SafetyCarState
+  focusDriver: string
+}
+
+export type ReplayResponse = {
+  race_state: RaceMetadata
+  events: TimelineEvent[]
+  replayState: ReplayState
+  timelineEvents: TimelineEvent[]
+}
+
+export type ReplayResult = {
+  replay: ReplayResponse
   source: "backend" | "fallback"
 }
 
@@ -108,6 +160,101 @@ const fallbackPrediction: PredictionResponse = {
   expected_time_delta: 4.8,
   suggested_compound: "hard",
   top_factors: ["high tyre age", "pace loss above threshold", "hard tyre recovery window"],
+}
+
+const fallbackReplay: ReplayResponse = {
+  race_state: {
+    race_id: "silverstone-2026-sim",
+    race_name: "Silverstone Strategy Lab",
+    session: "Race simulation",
+    circuit: "Silverstone",
+    lap: 27,
+    total_laps: 52,
+    weather: "Cloud cover building",
+    track_temp_c: 31,
+    rain_chance: 0.18,
+    safety_car: "clear",
+    focus_driver: "NOR",
+  },
+  events: [
+    {
+      lap: 12,
+      title: "Opening tyre phase settled",
+      detail: "Front runners stop attacking and begin protecting the left front.",
+      type: "race",
+    },
+    {
+      lap: 18,
+      title: "Virtual safety car window",
+      detail: "Pit loss drops by 5.2s, but the lead pack stays out.",
+      type: "warning",
+    },
+    {
+      lap: 24,
+      title: "Ferrari starts the undercut threat",
+      detail: "Leclerc gains three tenths over the last two laps.",
+      type: "pit",
+    },
+    {
+      lap: 27,
+      title: "RaceIQ calls the decision lap",
+      detail: "Norris can pit into clean air and attack on hard tyres.",
+      type: "pit",
+    },
+    {
+      lap: 31,
+      title: "Light rain risk appears",
+      detail: "Radar shows a weak shower crossing sector three.",
+      type: "weather",
+    },
+  ],
+  replayState: {
+    raceId: "silverstone-2026-sim",
+    race: "Silverstone Strategy Lab",
+    session: "Race simulation",
+    circuit: "Silverstone",
+    currentLap: 27,
+    totalLaps: 52,
+    lapRange: {
+      fromLap: 1,
+      toLap: 52,
+    },
+    weather: "Cloud cover building",
+    safetyCar: "clear",
+    focusDriver: "NOR",
+  },
+  timelineEvents: [
+    {
+      lap: 12,
+      title: "Opening tyre phase settled",
+      detail: "Front runners stop attacking and begin protecting the left front.",
+      type: "race",
+    },
+    {
+      lap: 18,
+      title: "Virtual safety car window",
+      detail: "Pit loss drops by 5.2s, but the lead pack stays out.",
+      type: "warning",
+    },
+    {
+      lap: 24,
+      title: "Ferrari starts the undercut threat",
+      detail: "Leclerc gains three tenths over the last two laps.",
+      type: "pit",
+    },
+    {
+      lap: 27,
+      title: "RaceIQ calls the decision lap",
+      detail: "Norris can pit into clean air and attack on hard tyres.",
+      type: "pit",
+    },
+    {
+      lap: 31,
+      title: "Light rain risk appears",
+      detail: "Radar shows a weak shower crossing sector three.",
+      type: "weather",
+    },
+  ],
 }
 
 const fallbackWinLikelihood: WinLikelihoodResponse = {
@@ -308,6 +455,44 @@ export async function getPitPrediction(): Promise<PitPredictionResult> {
   await delay(MOCK_LATENCY_MS)
   return {
     prediction: cloneFixture(fallbackPrediction),
+    source: "fallback",
+  }
+}
+
+export async function getRaceReplay(
+  request: ReplayRequest = {
+    focus_driver: "NOR",
+    from_lap: 1,
+    race_id: "silverstone-2026-sim",
+    to_lap: null,
+  },
+): Promise<ReplayResult> {
+  if (API_BASE_URL) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/replay`, {
+        body: JSON.stringify(request),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      })
+
+      if (!response.ok) {
+        throw new Error(`Replay request failed with ${response.status}`)
+      }
+
+      return {
+        replay: (await response.json()) as ReplayResponse,
+        source: "backend",
+      }
+    } catch (error) {
+      console.warn("Falling back to local replay fixture.", error)
+    }
+  }
+
+  await delay(MOCK_LATENCY_MS)
+  return {
+    replay: cloneFixture(fallbackReplay),
     source: "fallback",
   }
 }

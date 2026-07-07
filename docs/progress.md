@@ -58,6 +58,7 @@ Early MVP dashboard and backend contract alignment.
 - Updated `PitRecommendationPanel` to render `PredictionResponse` fields, loading state, top factors, and backend/local fallback status instead of hard-coded recommendation details.
 - Added typed frontend API support for `POST /forecast/win-likelihood` with deterministic local fallback data.
 - Replaced the static Strategy page forecast preview with a forecast panel that calls `getWinLikelihoodForecast()` and renders probabilities, confidence, top factors, data freshness, and fallback state.
+- Added typed frontend API support for `POST /replay` with deterministic local fallback data; timeline UI wiring is still deferred.
 
 ## Completed
 
@@ -71,6 +72,7 @@ Early MVP dashboard and backend contract alignment.
 - Strategy dashboard data can now come from the backend sample endpoint or the local fixture fallback.
 - The Strategy recommendation panel can now render backend prediction data, a loading state, or a deterministic local fallback.
 - The Strategy page now exposes deterministic forecast data through a visible forecast panel.
+- The frontend API layer is ready for replay data without changing the timeline UI yet.
 
 ## In Progress
 
