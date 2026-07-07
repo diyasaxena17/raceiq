@@ -409,15 +409,13 @@ Example response:
 
 ## Forecast Win Likelihood
 
-Planned endpoint after the first MVP:
-
 ```http
 POST /forecast/win-likelihood
 ```
 
-This endpoint will accept upcoming race context and return driver/team win probabilities for the next two races. Later versions should support a `remaining_season` forecast horizon.
+This endpoint accepts upcoming race context and returns deterministic mock driver/team win probabilities for the next two races. No database, live data feed, or ML model is used yet. Later versions should support a `remaining_season` forecast horizon.
 
-Example request shape:
+Example request:
 
 ```json
 {
@@ -427,20 +425,71 @@ Example request shape:
 }
 ```
 
-Example response shape:
+Example response:
 
 ```json
 {
   "forecast_horizon": "next_2_races",
-  "driver_probabilities": [],
-  "team_probabilities": [],
-  "top_factors": [],
-  "model_confidence": 0.0,
-  "generated_at": "2026-07-03T00:00:00Z",
-  "data_freshness": "placeholder"
+  "race_ids": ["monaco-2026", "canada-2026"],
+  "races": [
+    {
+      "race_id": "monaco-2026",
+      "race_name": "Monaco Grand Prix",
+      "circuit": "Circuit de Monaco",
+      "round": 8
+    },
+    {
+      "race_id": "canada-2026",
+      "race_name": "Canadian Grand Prix",
+      "circuit": "Circuit Gilles Villeneuve",
+      "round": 9
+    }
+  ],
+  "driver_probabilities": [
+    {
+      "entity_id": "NOR",
+      "entity_name": "Lando Norris",
+      "probability": 0.29,
+      "rank": 1,
+      "race_id": null,
+      "team": "McLaren",
+      "top_factors": ["recent race pace", "street-circuit qualifying value"]
+    }
+  ],
+  "team_probabilities": [
+    {
+      "entity_id": "mclaren",
+      "entity_name": "McLaren",
+      "probability": 0.34,
+      "rank": 1,
+      "race_id": null,
+      "team": null,
+      "top_factors": ["race pace", "tyre degradation control"]
+    }
+  ],
+  "top_factors": [
+    {
+      "label": "Street-circuit qualifying value",
+      "impact": "positive",
+      "weight": 0.31,
+      "detail": "Monaco-style track position makes qualifying form unusually important."
+    }
+  ],
+  "model_confidence": 0.62,
+  "generated_at": "2026-07-06T00:00:00Z",
+  "data_freshness": "deterministic sample data; no live feeds, database, or trained model"
 }
 ```
 
+Response notes:
+
+- `forecast_horizon` is currently limited to `next_2_races`.
+- `race_ids` echoes the selected race IDs from the request.
+- `driver_probabilities` and `team_probabilities` are overall probabilities across the requested two-race horizon.
+- `top_factors` explains the deterministic baseline signals used for the mock forecast.
+- `model_confidence` is a mock uncertainty score, not a trained model calibration metric.
+- `generated_at` is fixed for deterministic tests and demos.
+
 ## MVP API Rule
 
-The first backend pass implements `/health`, `/predict`, `/replay`, and `/strategy/sample` with deterministic mock data. Win-likelihood forecasting is planned for a later sprint after the data model exists.
+The first backend pass implements `/health`, `/predict`, `/predict/sample-request`, `/replay`, `/strategy/sample`, and `/forecast/win-likelihood` with deterministic mock data. Database-backed and model-backed behavior is planned for later sprints.

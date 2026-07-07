@@ -117,6 +117,40 @@ def test_replay_returns_timeline_data() -> None:
         assert {"lap", "title", "detail", "type"} <= set(event)
 
 
+def test_forecast_win_likelihood_returns_deterministic_probabilities() -> None:
+    response = client.post(
+        "/forecast/win-likelihood",
+        json={
+            "forecast_horizon": "next_2_races",
+            "race_ids": ["monaco-2026", "canada-2026"],
+            "include_sentiment": True,
+        },
+    )
+
+    assert response.status_code == 200
+
+    body = response.json()
+    assert body["forecast_horizon"] == "next_2_races"
+    assert body["race_ids"] == ["monaco-2026", "canada-2026"]
+    assert body["generated_at"] == "2026-07-06T00:00:00Z"
+    assert "deterministic sample data" in body["data_freshness"]
+    assert 0 <= body["model_confidence"] <= 1
+
+    assert len(body["races"]) == 2
+    assert body["races"][0]["race_id"] == "monaco-2026"
+    assert body["races"][1]["race_id"] == "canada-2026"
+
+    assert len(body["driver_probabilities"]) > 0
+    assert len(body["team_probabilities"]) > 0
+    for probability in body["driver_probabilities"] + body["team_probabilities"]:
+        assert 0 <= probability["probability"] <= 1
+        assert probability["rank"] >= 1
+        assert len(probability["top_factors"]) > 0
+
+    assert len(body["top_factors"]) > 0
+    assert {"label", "impact", "weight", "detail"} <= set(body["top_factors"][0])
+
+
 def test_strategy_sample_matches_frontend_dashboard_contract() -> None:
     response = client.get("/strategy/sample")
 

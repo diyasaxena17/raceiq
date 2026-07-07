@@ -9,7 +9,7 @@ Early MVP dashboard and backend contract alignment.
 ## Current Status
 
 - Frontend: React, TypeScript, Vite, Tailwind, Recharts, Framer Motion, and Lucide are installed. The app has a cinematic landing page, a routed strategy dashboard, route-level code splitting, and a typed API boundary with local fixture fallback.
-- Backend: FastAPI is installed. `GET /health`, `POST /predict`, `GET /predict/sample-request`, `POST /replay`, and `GET /strategy/sample` are implemented with deterministic service logic and Pydantic schemas.
+- Backend: FastAPI is installed. `GET /health`, `POST /predict`, `GET /predict/sample-request`, `POST /replay`, `GET /strategy/sample`, and `POST /forecast/win-likelihood` are implemented with deterministic service logic and Pydantic schemas.
 - ML: data folders, pipeline script placeholders, and output placeholders exist. No model has been trained yet.
 - Data: static/sample data is planned first. PostgreSQL is planned for the forecasting phase when historical features, sentiment snapshots, model runs, and forecast outputs need persistence.
 - Docs: product requirements, architecture, roadmap, API, data ingestion, data dictionary, and model card docs exist.
@@ -53,6 +53,7 @@ Early MVP dashboard and backend contract alignment.
 - Added local Vite dev CORS origins to the FastAPI app.
 - Added `GET /predict/sample-request` so the frontend can request a normalized sample payload before posting to `POST /predict`.
 - Refined `POST /replay` with frontend-ready `replayState` and `timelineEvents` fields while keeping legacy `race_state` and `events`.
+- Added deterministic `POST /forecast/win-likelihood` contracts for next-two-races driver/team probabilities, top factors, confidence, generated timestamp, and data freshness.
 
 ## Completed
 
@@ -61,7 +62,7 @@ Early MVP dashboard and backend contract alignment.
 - Health route is implemented and organized under backend routes.
 - Frontend now has a usable mock-data RaceIQ dashboard.
 - Frontend has a first Playwright smoke test suite.
-- Backend has deterministic contracts for health, predict, predict sample request, replay, and the sample strategy dashboard.
+- Backend has deterministic contracts for health, predict, predict sample request, replay, the sample strategy dashboard, and win-likelihood forecasting.
 - Replay responses now include current lap, total laps, lap range, weather, safety car state, and timeline events for the future timeline UI.
 - Strategy dashboard data can now come from the backend sample endpoint or the local fixture fallback.
 
@@ -71,11 +72,10 @@ Early MVP dashboard and backend contract alignment.
 
 ## Not Started
 
-- Backend `/forecast/win-likelihood` endpoint.
-- Forecast schemas.
 - PostgreSQL schema and migrations.
 - Data ingestion scripts.
 - ML model training.
+- Model-backed win-likelihood forecasting.
 - Full-stack integration tests that assert the frontend successfully renders backend-provided sample data.
 
 ## Next Recommended Steps
@@ -84,7 +84,7 @@ Early MVP dashboard and backend contract alignment.
 2. Add richer sample race scenarios.
 3. Add full-stack integration coverage for the optional backend sample data path.
 4. Design the PostgreSQL schema for forecasting before implementing ingestion.
-5. Plan the first deterministic `/forecast/win-likelihood` baseline.
+5. Expand the deterministic forecast contract into a frontend forecast panel when the strategy flow is wired.
 
 ## Update Template
 
