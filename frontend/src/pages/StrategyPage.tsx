@@ -24,9 +24,10 @@ import {
 
 export function StrategyPage() {
   const [selectedScenarioId, setSelectedScenarioId] = useState(raceScenarios[0].id)
-  const [backendDashboardData, setBackendDashboardData] =
-    useState<StrategyDashboardData | null>(null)
-  const [backendPrediction, setBackendPrediction] = useState<PredictionResponse | null>(null)
+  const [dashboardData, setDashboardData] = useState<StrategyDashboardData>(
+    raceScenarios[0].data,
+  )
+  const [prediction, setPrediction] = useState<PredictionResponse>(raceScenarios[0].prediction)
   const [predictionSource, setPredictionSource] =
     useState<PitPredictionResult["source"]>("fallback")
   const [isPredictionLoading, setIsPredictionLoading] = useState(true)
@@ -44,36 +45,29 @@ export function StrategyPage() {
       raceScenarios.find((scenario) => scenario.id === selectedScenarioId) ?? raceScenarios[0],
     [selectedScenarioId],
   )
-  const usesBackendScenario = selectedScenario.id === raceScenarios[0].id
-  const dashboardData =
-    usesBackendScenario && backendDashboardData ? backendDashboardData : selectedScenario.data
   const raceState = dashboardData.raceState
-  const prediction =
-    usesBackendScenario && backendPrediction ? backendPrediction : selectedScenario.prediction
-  const timelineEvents =
-    usesBackendScenario && replay ? replay.timelineEvents : dashboardData.timelineEvents
-  const timelineTotalLaps =
-    usesBackendScenario && replay ? replay.replayState.totalLaps : raceState.totalLaps
+  const timelineEvents = replay?.timelineEvents ?? dashboardData.timelineEvents
+  const timelineTotalLaps = replay?.replayState.totalLaps ?? raceState.totalLaps
 
   useEffect(() => {
     let isMounted = true
 
-    async function loadBackendScenarioData() {
+    async function loadScenarioData() {
       setIsPredictionLoading(true)
       setIsReplayLoading(true)
 
       const [strategyDashboard, pitPrediction, raceReplay] = await Promise.all([
-        getStrategyDashboard(),
-        getPitPrediction(),
-        getRaceReplay(),
+        getStrategyDashboard(selectedScenarioId),
+        getPitPrediction(selectedScenarioId),
+        getRaceReplay(undefined, selectedScenarioId),
       ])
 
       if (!isMounted) {
         return
       }
 
-      setBackendDashboardData(strategyDashboard)
-      setBackendPrediction(pitPrediction.prediction)
+      setDashboardData(strategyDashboard)
+      setPrediction(pitPrediction.prediction)
       setPredictionSource(pitPrediction.source)
       setReplay(raceReplay.replay)
       setReplaySource(raceReplay.source)
@@ -84,7 +78,7 @@ export function StrategyPage() {
     async function loadForecast() {
       setIsForecastLoading(true)
 
-      const winLikelihood = await getWinLikelihoodForecast()
+      const winLikelihood = await getWinLikelihoodForecast(undefined, selectedScenarioId)
 
       if (!isMounted) {
         return
@@ -95,13 +89,13 @@ export function StrategyPage() {
       setIsForecastLoading(false)
     }
 
-    void loadBackendScenarioData()
+    void loadScenarioData()
     void loadForecast()
 
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [selectedScenario, selectedScenarioId])
 
   const focusDriver = useMemo(
     () =>
@@ -117,6 +111,11 @@ export function StrategyPage() {
     }
 
     setSelectedScenarioId(scenarioId)
+    setDashboardData(nextScenario.data)
+    setPrediction(nextScenario.prediction)
+    setPredictionSource("fallback")
+    setReplay(null)
+    setReplaySource("fallback")
     setActiveLap(nextScenario.data.raceState.lap)
   }
 
@@ -179,15 +178,15 @@ export function StrategyPage() {
         <div className="left-stack" id="strategy">
           <PitRecommendationPanel
             branches={dashboardData.strategyBranches}
-            isFallback={!usesBackendScenario || predictionSource === "fallback"}
-            isLoading={usesBackendScenario && isPredictionLoading}
+            isFallback={predictionSource === "fallback"}
+            isLoading={isPredictionLoading}
             prediction={prediction}
           />
           <RaceTimeline
             activeLap={activeLap}
             events={timelineEvents}
-            isFallback={!usesBackendScenario || replaySource === "fallback"}
-            isLoading={usesBackendScenario && isReplayLoading}
+            isFallback={replaySource === "fallback"}
+            isLoading={isReplayLoading}
             onLapChange={setActiveLap}
             totalLaps={timelineTotalLaps}
           />

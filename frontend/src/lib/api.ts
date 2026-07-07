@@ -1,5 +1,6 @@
 import {
-  strategyDashboardFixture,
+  raceScenarios,
+  type RaceScenario,
   type TimelineEvent,
   type StrategyDashboardData,
 } from "../data/mockRace"
@@ -151,111 +152,7 @@ export type WinLikelihoodResult = {
 
 const MOCK_LATENCY_MS = 180
 const API_BASE_URL = import.meta.env.VITE_RACEIQ_API_BASE_URL?.replace(/\/$/, "")
-
-const fallbackPrediction: PredictionResponse = {
-  recommendation: "pit_now",
-  confidence: 0.86,
-  reason: "Tyre age and recent pace loss suggest the current stint is near the cliff.",
-  risk_level: "medium",
-  expected_time_delta: 4.8,
-  suggested_compound: "hard",
-  top_factors: ["high tyre age", "pace loss above threshold", "hard tyre recovery window"],
-}
-
-const fallbackReplay: ReplayResponse = {
-  race_state: {
-    race_id: "silverstone-2026-sim",
-    race_name: "Silverstone Strategy Lab",
-    session: "Race simulation",
-    circuit: "Silverstone",
-    lap: 27,
-    total_laps: 52,
-    weather: "Cloud cover building",
-    track_temp_c: 31,
-    rain_chance: 0.18,
-    safety_car: "clear",
-    focus_driver: "NOR",
-  },
-  events: [
-    {
-      lap: 12,
-      title: "Opening tyre phase settled",
-      detail: "Front runners stop attacking and begin protecting the left front.",
-      type: "race",
-    },
-    {
-      lap: 18,
-      title: "Virtual safety car window",
-      detail: "Pit loss drops by 5.2s, but the lead pack stays out.",
-      type: "warning",
-    },
-    {
-      lap: 24,
-      title: "Ferrari starts the undercut threat",
-      detail: "Leclerc gains three tenths over the last two laps.",
-      type: "pit",
-    },
-    {
-      lap: 27,
-      title: "RaceIQ calls the decision lap",
-      detail: "Norris can pit into clean air and attack on hard tyres.",
-      type: "pit",
-    },
-    {
-      lap: 31,
-      title: "Light rain risk appears",
-      detail: "Radar shows a weak shower crossing sector three.",
-      type: "weather",
-    },
-  ],
-  replayState: {
-    raceId: "silverstone-2026-sim",
-    race: "Silverstone Strategy Lab",
-    session: "Race simulation",
-    circuit: "Silverstone",
-    currentLap: 27,
-    totalLaps: 52,
-    lapRange: {
-      fromLap: 1,
-      toLap: 52,
-    },
-    weather: "Cloud cover building",
-    safetyCar: "clear",
-    focusDriver: "NOR",
-  },
-  timelineEvents: [
-    {
-      lap: 12,
-      title: "Opening tyre phase settled",
-      detail: "Front runners stop attacking and begin protecting the left front.",
-      type: "race",
-    },
-    {
-      lap: 18,
-      title: "Virtual safety car window",
-      detail: "Pit loss drops by 5.2s, but the lead pack stays out.",
-      type: "warning",
-    },
-    {
-      lap: 24,
-      title: "Ferrari starts the undercut threat",
-      detail: "Leclerc gains three tenths over the last two laps.",
-      type: "pit",
-    },
-    {
-      lap: 27,
-      title: "RaceIQ calls the decision lap",
-      detail: "Norris can pit into clean air and attack on hard tyres.",
-      type: "pit",
-    },
-    {
-      lap: 31,
-      title: "Light rain risk appears",
-      detail: "Radar shows a weak shower crossing sector three.",
-      type: "weather",
-    },
-  ],
-}
+const DEFAULT_SCENARIO_ID = raceScenarios[0].id
 
 const fallbackWinLikelihood: WinLikelihoodResponse = {
   forecast_horizon: "next_2_races",
@@ -363,6 +260,14 @@ const fallbackWinLikelihood: WinLikelihoodResponse = {
   data_freshness: "deterministic sample data; no live feeds, database, or trained model",
 }
 
+function getScenario(scenarioId = DEFAULT_SCENARIO_ID): RaceScenario {
+  return raceScenarios.find((scenario) => scenario.id === scenarioId) ?? raceScenarios[0]
+}
+
+function canUseBackendScenario(scenarioId = DEFAULT_SCENARIO_ID) {
+  return Boolean(API_BASE_URL) && scenarioId === DEFAULT_SCENARIO_ID
+}
+
 function cloneFixture<T>(value: T): T {
   return structuredClone(value)
 }
@@ -371,6 +276,163 @@ function delay(ms: number) {
   return new Promise((resolve) => {
     window.setTimeout(resolve, ms)
   })
+}
+
+function parseSeconds(value: string) {
+  if (value.toLowerCase() === "leader") {
+    return 0
+  }
+
+  return Number.parseFloat(value.replace(/[+s]/g, ""))
+}
+
+function parsePercent(value: string) {
+  return Number.parseFloat(value.replace("%", "")) / 100
+}
+
+function parseCelsius(value: string) {
+  return Number.parseFloat(value.replace("C", "").trim())
+}
+
+function toSafetyCarState(value: string): SafetyCarState {
+  const normalizedValue = value.toLowerCase()
+
+  if (normalizedValue === "vsc") {
+    return "vsc"
+  }
+
+  if (normalizedValue.includes("safety")) {
+    return "safety_car"
+  }
+
+  return "clear"
+}
+
+function toTyreCompound(value: string): TyreCompound {
+  return value.toLowerCase() as TyreCompound
+}
+
+function createScenarioRaceId(scenario: RaceScenario) {
+  return `${scenario.id}-sim`
+}
+
+function createRaceStateRequest(scenario: RaceScenario): RaceStateRequest {
+  const { raceState } = scenario.data
+
+  return {
+    race_id: createScenarioRaceId(scenario),
+    circuit: raceState.circuit,
+    drivers: scenario.data.drivers.map((driver) => ({
+      code: driver.code,
+      gap_seconds: parseSeconds(driver.gap),
+      name: driver.name,
+      pace_delta: parseSeconds(driver.paceDelta),
+      pit_stops: driver.pitStops,
+      position: driver.position,
+      team: driver.team,
+      tyre: toTyreCompound(driver.tyre),
+      tyre_age: driver.tyreAge,
+    })),
+    focus_driver: raceState.focusDriver,
+    lap: raceState.lap,
+    rain_chance: parsePercent(raceState.rainChance),
+    safety_car: toSafetyCarState(raceState.safetyCar),
+    total_laps: raceState.totalLaps,
+    track_temp_c: parseCelsius(raceState.trackTemp),
+    weather: raceState.weather,
+  }
+}
+
+function createReplayResponse(scenario: RaceScenario): ReplayResponse {
+  const { raceState, timelineEvents } = scenario.data
+  const raceMetadata: RaceMetadata = {
+    circuit: raceState.circuit,
+    focus_driver: raceState.focusDriver,
+    lap: raceState.lap,
+    race_id: createScenarioRaceId(scenario),
+    race_name: raceState.race,
+    rain_chance: parsePercent(raceState.rainChance),
+    safety_car: toSafetyCarState(raceState.safetyCar),
+    session: raceState.session,
+    total_laps: raceState.totalLaps,
+    track_temp_c: parseCelsius(raceState.trackTemp),
+    weather: raceState.weather,
+  }
+
+  return {
+    events: timelineEvents,
+    race_state: raceMetadata,
+    replayState: {
+      circuit: raceState.circuit,
+      currentLap: raceState.lap,
+      focusDriver: raceState.focusDriver,
+      lapRange: {
+        fromLap: 1,
+        toLap: raceState.totalLaps,
+      },
+      race: raceState.race,
+      raceId: raceMetadata.race_id,
+      safetyCar: raceMetadata.safety_car,
+      session: raceState.session,
+      totalLaps: raceState.totalLaps,
+      weather: raceState.weather,
+    },
+    timelineEvents,
+  }
+}
+
+function createScenarioForecast(scenario: RaceScenario): WinLikelihoodResponse {
+  const { forecastPreview, raceState } = scenario.data
+
+  if (scenario.id === DEFAULT_SCENARIO_ID) {
+    return cloneFixture(fallbackWinLikelihood)
+  }
+
+  return {
+    data_freshness: `deterministic ${raceState.circuit} scenario data; no live feeds, database, or trained model`,
+    driver_probabilities: scenario.data.drivers.map((driver, index) => ({
+      entity_id: driver.code,
+      entity_name: driver.name,
+      probability: Number((Math.max(0.12, 0.32 - index * 0.07)).toFixed(2)),
+      race_id: null,
+      rank: index + 1,
+      team: driver.team,
+      top_factors: [driver.status.toLowerCase(), `${raceState.circuit} scenario pace`],
+    })),
+    forecast_horizon: "next_2_races",
+    generated_at: "2026-07-06T00:00:00Z",
+    model_confidence: scenario.prediction.confidence,
+    race_ids: [createScenarioRaceId(scenario), "next-race-sim"],
+    races: [
+      {
+        circuit: raceState.circuit,
+        race_id: createScenarioRaceId(scenario),
+        race_name: raceState.race,
+        round: 1,
+      },
+      {
+        circuit: "Next race simulation",
+        race_id: "next-race-sim",
+        race_name: "Next Race Simulation",
+        round: 2,
+      },
+    ],
+    team_probabilities: forecastPreview.map((team, index) => ({
+      entity_id: team.label.toLowerCase().replaceAll(" ", "-"),
+      entity_name: team.label,
+      probability: Number((team.value / 100).toFixed(2)),
+      race_id: null,
+      rank: index + 1,
+      team: null,
+      top_factors: [`${raceState.circuit} fit`, "scenario forecast preview"],
+    })),
+    top_factors: scenario.prediction.top_factors.map((factor, index) => ({
+      detail: `${factor} is a leading deterministic signal in the ${scenario.label} scenario.`,
+      impact: index === 0 ? "positive" : "neutral",
+      label: factor,
+      weight: Number(Math.max(0.12, 0.32 - index * 0.07).toFixed(2)),
+    })),
+  }
 }
 
 async function getStrategyDashboardFromBackend(): Promise<StrategyDashboardData> {
@@ -393,9 +455,11 @@ async function getPredictSampleRequestFromBackend(): Promise<RaceStateRequest> {
   return (await response.json()) as RaceStateRequest
 }
 
-export async function getPredictSampleRequest(): Promise<RaceStateRequest | null> {
-  if (!API_BASE_URL) {
-    return null
+export async function getPredictSampleRequest(
+  scenarioId = DEFAULT_SCENARIO_ID,
+): Promise<RaceStateRequest | null> {
+  if (!canUseBackendScenario(scenarioId)) {
+    return cloneFixture(createRaceStateRequest(getScenario(scenarioId)))
   }
 
   try {
@@ -426,21 +490,24 @@ async function postPitPredictionToBackend(
 
 export async function postPitPrediction(
   raceState: RaceStateRequest,
+  scenarioId = DEFAULT_SCENARIO_ID,
 ): Promise<PredictionResponse> {
-  if (!API_BASE_URL) {
-    return cloneFixture(fallbackPrediction)
+  if (!canUseBackendScenario(scenarioId)) {
+    return cloneFixture(getScenario(scenarioId).prediction)
   }
 
   try {
     return await postPitPredictionToBackend(raceState)
   } catch (error) {
     console.warn("Falling back to local pit prediction fixture.", error)
-    return cloneFixture(fallbackPrediction)
+    return cloneFixture(getScenario(scenarioId).prediction)
   }
 }
 
-export async function getPitPrediction(): Promise<PitPredictionResult> {
-  if (API_BASE_URL) {
+export async function getPitPrediction(
+  scenarioId = DEFAULT_SCENARIO_ID,
+): Promise<PitPredictionResult> {
+  if (canUseBackendScenario(scenarioId)) {
     try {
       const sampleRequest = await getPredictSampleRequestFromBackend()
       return {
@@ -454,7 +521,7 @@ export async function getPitPrediction(): Promise<PitPredictionResult> {
 
   await delay(MOCK_LATENCY_MS)
   return {
-    prediction: cloneFixture(fallbackPrediction),
+    prediction: cloneFixture(getScenario(scenarioId).prediction),
     source: "fallback",
   }
 }
@@ -466,8 +533,9 @@ export async function getRaceReplay(
     race_id: "silverstone-2026-sim",
     to_lap: null,
   },
+  scenarioId = DEFAULT_SCENARIO_ID,
 ): Promise<ReplayResult> {
-  if (API_BASE_URL) {
+  if (canUseBackendScenario(scenarioId)) {
     try {
       const response = await fetch(`${API_BASE_URL}/replay`, {
         body: JSON.stringify(request),
@@ -492,7 +560,7 @@ export async function getRaceReplay(
 
   await delay(MOCK_LATENCY_MS)
   return {
-    replay: cloneFixture(fallbackReplay),
+    replay: cloneFixture(createReplayResponse(getScenario(scenarioId))),
     source: "fallback",
   }
 }
@@ -503,8 +571,9 @@ export async function getWinLikelihoodForecast(
     include_sentiment: true,
     race_ids: ["monaco-2026", "canada-2026"],
   },
+  scenarioId = DEFAULT_SCENARIO_ID,
 ): Promise<WinLikelihoodResult> {
-  if (API_BASE_URL) {
+  if (canUseBackendScenario(scenarioId)) {
     try {
       const response = await fetch(`${API_BASE_URL}/forecast/win-likelihood`, {
         body: JSON.stringify(request),
@@ -529,13 +598,15 @@ export async function getWinLikelihoodForecast(
 
   await delay(MOCK_LATENCY_MS)
   return {
-    forecast: cloneFixture(fallbackWinLikelihood),
+    forecast: cloneFixture(createScenarioForecast(getScenario(scenarioId))),
     source: "fallback",
   }
 }
 
-export async function getStrategyDashboard(): Promise<StrategyDashboardData> {
-  if (API_BASE_URL) {
+export async function getStrategyDashboard(
+  scenarioId = DEFAULT_SCENARIO_ID,
+): Promise<StrategyDashboardData> {
+  if (canUseBackendScenario(scenarioId)) {
     try {
       return await getStrategyDashboardFromBackend()
     } catch (error) {
@@ -544,5 +615,5 @@ export async function getStrategyDashboard(): Promise<StrategyDashboardData> {
   }
 
   await delay(MOCK_LATENCY_MS)
-  return cloneFixture(strategyDashboardFixture)
+  return cloneFixture(getScenario(scenarioId).data)
 }
