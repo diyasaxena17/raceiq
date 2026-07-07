@@ -498,7 +498,7 @@ Frontend usage:
 - `frontend/src/lib/api.ts` exposes typed request/response models and `getWinLikelihoodForecast()`.
 - The function calls `POST /forecast/win-likelihood` only when `VITE_RACEIQ_API_BASE_URL` is set.
 - If the backend is unavailable or the base URL is unset, the function returns deterministic local fallback forecast data.
-- The function is not wired into the visible dashboard yet.
+- The Strategy page forecast panel renders the response with loading and fallback states.
 
 ## MVP API Rule
 

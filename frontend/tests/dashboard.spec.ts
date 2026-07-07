@@ -18,6 +18,9 @@ test("renders the RaceIQ command dashboard", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Silverstone pulse map" })).toBeVisible()
   await expect(page.getByRole("heading", { name: "Medium compound is near the edge" })).toBeVisible()
   await expect(page.getByText("Next two race outlook")).toBeVisible()
+  await expect(page.getByText("Using local deterministic forecast fallback.")).toBeVisible()
+  await expect(page.getByText("Model confidence")).toBeVisible()
+  await expect(page.getByText("Street-circuit qualifying value")).toBeVisible()
 })
 
 test("race scrubber updates the active lap", async ({ page }) => {

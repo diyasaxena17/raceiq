@@ -56,7 +56,8 @@ Early MVP dashboard and backend contract alignment.
 - Added deterministic `POST /forecast/win-likelihood` contracts for next-two-races driver/team probabilities, top factors, confidence, generated timestamp, and data freshness.
 - Wired the Strategy page to call `GET /predict/sample-request` and `POST /predict` through the typed frontend API layer, with local prediction fallback.
 - Updated `PitRecommendationPanel` to render `PredictionResponse` fields, loading state, top factors, and backend/local fallback status instead of hard-coded recommendation details.
-- Added typed frontend API support for `POST /forecast/win-likelihood` with deterministic local fallback data; UI wiring is still deferred.
+- Added typed frontend API support for `POST /forecast/win-likelihood` with deterministic local fallback data.
+- Replaced the static Strategy page forecast preview with a forecast panel that calls `getWinLikelihoodForecast()` and renders probabilities, confidence, top factors, data freshness, and fallback state.
 
 ## Completed
 
@@ -69,11 +70,11 @@ Early MVP dashboard and backend contract alignment.
 - Replay responses now include current lap, total laps, lap range, weather, safety car state, and timeline events for the future timeline UI.
 - Strategy dashboard data can now come from the backend sample endpoint or the local fixture fallback.
 - The Strategy recommendation panel can now render backend prediction data, a loading state, or a deterministic local fallback.
-- The frontend API layer is ready for forecast data without exposing the full forecast UI yet.
+- The Strategy page now exposes deterministic forecast data through a visible forecast panel.
 
 ## In Progress
 
-- Dashboard polish and forecast frontend integration are ready for the next iteration.
+- Dashboard polish and forecast scenario controls are ready for the next iteration.
 
 ## Not Started
 
@@ -87,9 +88,9 @@ Early MVP dashboard and backend contract alignment.
 
 1. Add richer sample race scenarios.
 2. Add full-stack integration coverage for the optional backend sample and prediction data paths.
-3. Add a frontend forecast panel that calls `POST /forecast/win-likelihood`.
+3. Add scenario controls for forecast horizon, sentiment inclusion, and selected races.
 4. Design the PostgreSQL schema for forecasting before implementing ingestion.
-5. Expand the deterministic forecast contract into a frontend forecast panel when the strategy flow is wired.
+5. Plan the first model-backed forecast baseline after data foundations are defined.
 
 ## Update Template
 
