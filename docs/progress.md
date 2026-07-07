@@ -56,6 +56,7 @@ Early MVP dashboard and backend contract alignment.
 - Added deterministic `POST /forecast/win-likelihood` contracts for next-two-races driver/team probabilities, top factors, confidence, generated timestamp, and data freshness.
 - Wired the Strategy page to call `GET /predict/sample-request` and `POST /predict` through the typed frontend API layer, with local prediction fallback.
 - Updated `PitRecommendationPanel` to render `PredictionResponse` fields, loading state, top factors, and backend/local fallback status instead of hard-coded recommendation details.
+- Added typed frontend API support for `POST /forecast/win-likelihood` with deterministic local fallback data; UI wiring is still deferred.
 
 ## Completed
 
@@ -68,6 +69,7 @@ Early MVP dashboard and backend contract alignment.
 - Replay responses now include current lap, total laps, lap range, weather, safety car state, and timeline events for the future timeline UI.
 - Strategy dashboard data can now come from the backend sample endpoint or the local fixture fallback.
 - The Strategy recommendation panel can now render backend prediction data, a loading state, or a deterministic local fallback.
+- The frontend API layer is ready for forecast data without exposing the full forecast UI yet.
 
 ## In Progress
 

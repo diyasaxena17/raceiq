@@ -493,6 +493,13 @@ Response notes:
 - `model_confidence` is a mock uncertainty score, not a trained model calibration metric.
 - `generated_at` is fixed for deterministic tests and demos.
 
+Frontend usage:
+
+- `frontend/src/lib/api.ts` exposes typed request/response models and `getWinLikelihoodForecast()`.
+- The function calls `POST /forecast/win-likelihood` only when `VITE_RACEIQ_API_BASE_URL` is set.
+- If the backend is unavailable or the base URL is unset, the function returns deterministic local fallback forecast data.
+- The function is not wired into the visible dashboard yet.
+
 ## MVP API Rule
 
 The first backend pass implements `/health`, `/predict`, `/predict/sample-request`, `/replay`, `/strategy/sample`, and `/forecast/win-likelihood` with deterministic mock data. Database-backed and model-backed behavior is planned for later sprints.

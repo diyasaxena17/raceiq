@@ -48,6 +48,55 @@ export type PitPredictionResult = {
   source: "backend" | "fallback"
 }
 
+export type ForecastHorizon = "next_2_races"
+
+export type WinLikelihoodRequest = {
+  forecast_horizon: ForecastHorizon
+  race_ids: string[]
+  include_sentiment: boolean
+}
+
+export type ForecastRace = {
+  race_id: string
+  race_name: string
+  circuit: string
+  round: number
+}
+
+export type EntityProbability = {
+  entity_id: string
+  entity_name: string
+  probability: number
+  rank: number
+  race_id: string | null
+  team: string | null
+  top_factors: string[]
+}
+
+export type ForecastFactor = {
+  label: string
+  impact: "positive" | "negative" | "neutral"
+  weight: number
+  detail: string
+}
+
+export type WinLikelihoodResponse = {
+  forecast_horizon: ForecastHorizon
+  race_ids: string[]
+  races: ForecastRace[]
+  driver_probabilities: EntityProbability[]
+  team_probabilities: EntityProbability[]
+  top_factors: ForecastFactor[]
+  model_confidence: number
+  generated_at: string
+  data_freshness: string
+}
+
+export type WinLikelihoodResult = {
+  forecast: WinLikelihoodResponse
+  source: "backend" | "fallback"
+}
+
 const MOCK_LATENCY_MS = 180
 const API_BASE_URL = import.meta.env.VITE_RACEIQ_API_BASE_URL?.replace(/\/$/, "")
 
@@ -59,6 +108,112 @@ const fallbackPrediction: PredictionResponse = {
   expected_time_delta: 4.8,
   suggested_compound: "hard",
   top_factors: ["high tyre age", "pace loss above threshold", "hard tyre recovery window"],
+}
+
+const fallbackWinLikelihood: WinLikelihoodResponse = {
+  forecast_horizon: "next_2_races",
+  race_ids: ["monaco-2026", "canada-2026"],
+  races: [
+    {
+      race_id: "monaco-2026",
+      race_name: "Monaco Grand Prix",
+      circuit: "Circuit de Monaco",
+      round: 8,
+    },
+    {
+      race_id: "canada-2026",
+      race_name: "Canadian Grand Prix",
+      circuit: "Circuit Gilles Villeneuve",
+      round: 9,
+    },
+  ],
+  driver_probabilities: [
+    {
+      entity_id: "NOR",
+      entity_name: "Lando Norris",
+      probability: 0.29,
+      rank: 1,
+      race_id: null,
+      team: "McLaren",
+      top_factors: ["recent race pace", "street-circuit qualifying value"],
+    },
+    {
+      entity_id: "LEC",
+      entity_name: "Charles Leclerc",
+      probability: 0.25,
+      rank: 2,
+      race_id: null,
+      team: "Ferrari",
+      top_factors: ["track history", "qualifying strength"],
+    },
+    {
+      entity_id: "HAM",
+      entity_name: "Lewis Hamilton",
+      probability: 0.18,
+      rank: 3,
+      race_id: null,
+      team: "Mercedes",
+      top_factors: ["race management", "weather uncertainty"],
+    },
+  ],
+  team_probabilities: [
+    {
+      entity_id: "mclaren",
+      entity_name: "McLaren",
+      probability: 0.34,
+      rank: 1,
+      race_id: null,
+      team: null,
+      top_factors: ["race pace", "tyre degradation control"],
+    },
+    {
+      entity_id: "ferrari",
+      entity_name: "Ferrari",
+      probability: 0.28,
+      rank: 2,
+      race_id: null,
+      team: null,
+      top_factors: ["qualifying strength", "street-circuit fit"],
+    },
+    {
+      entity_id: "mercedes",
+      entity_name: "Mercedes",
+      probability: 0.21,
+      rank: 3,
+      race_id: null,
+      team: null,
+      top_factors: ["reliability", "wet-weather adaptability"],
+    },
+  ],
+  top_factors: [
+    {
+      label: "Street-circuit qualifying value",
+      impact: "positive",
+      weight: 0.31,
+      detail: "Monaco-style track position makes qualifying form unusually important.",
+    },
+    {
+      label: "Recent race pace",
+      impact: "positive",
+      weight: 0.27,
+      detail: "McLaren and Ferrari carry the strongest mock race-pace trend.",
+    },
+    {
+      label: "Weather uncertainty",
+      impact: "neutral",
+      weight: 0.18,
+      detail: "Canada adds a moderate rain and safety-car uncertainty band.",
+    },
+    {
+      label: "Sentiment signal",
+      impact: "positive",
+      weight: 0.12,
+      detail: "Mock media and team confidence signal is included.",
+    },
+  ],
+  model_confidence: 0.62,
+  generated_at: "2026-07-06T00:00:00Z",
+  data_freshness: "deterministic sample data; no live feeds, database, or trained model",
 }
 
 function cloneFixture<T>(value: T): T {
@@ -153,6 +308,43 @@ export async function getPitPrediction(): Promise<PitPredictionResult> {
   await delay(MOCK_LATENCY_MS)
   return {
     prediction: cloneFixture(fallbackPrediction),
+    source: "fallback",
+  }
+}
+
+export async function getWinLikelihoodForecast(
+  request: WinLikelihoodRequest = {
+    forecast_horizon: "next_2_races",
+    include_sentiment: true,
+    race_ids: ["monaco-2026", "canada-2026"],
+  },
+): Promise<WinLikelihoodResult> {
+  if (API_BASE_URL) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/forecast/win-likelihood`, {
+        body: JSON.stringify(request),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      })
+
+      if (!response.ok) {
+        throw new Error(`Win likelihood request failed with ${response.status}`)
+      }
+
+      return {
+        forecast: (await response.json()) as WinLikelihoodResponse,
+        source: "backend",
+      }
+    } catch (error) {
+      console.warn("Falling back to local win-likelihood fixture.", error)
+    }
+  }
+
+  await delay(MOCK_LATENCY_MS)
+  return {
+    forecast: cloneFixture(fallbackWinLikelihood),
     source: "fallback",
   }
 }
