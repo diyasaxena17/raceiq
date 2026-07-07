@@ -10,12 +10,16 @@ import {
   getPitPrediction,
   getStrategyDashboard,
   type PredictionResponse,
+  type PitPredictionResult,
   type StrategyDashboardData,
 } from "../lib/api"
 
 export function StrategyPage() {
   const [dashboardData, setDashboardData] = useState<StrategyDashboardData | null>(null)
   const [prediction, setPrediction] = useState<PredictionResponse | null>(null)
+  const [predictionSource, setPredictionSource] =
+    useState<PitPredictionResult["source"]>("fallback")
+  const [isPredictionLoading, setIsPredictionLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeLap, setActiveLap] = useState<number | null>(null)
 
@@ -24,17 +28,13 @@ export function StrategyPage() {
 
     async function loadDashboard() {
       try {
-        const [data, pitPrediction] = await Promise.all([
-          getStrategyDashboard(),
-          getPitPrediction(),
-        ])
+        const data = await getStrategyDashboard()
 
         if (!isMounted) {
           return
         }
 
         setDashboardData(data)
-        setPrediction(pitPrediction)
         setActiveLap(data.raceState.lap)
       } catch {
         if (isMounted) {
@@ -43,7 +43,22 @@ export function StrategyPage() {
       }
     }
 
+    async function loadPrediction() {
+      setIsPredictionLoading(true)
+
+      const pitPrediction = await getPitPrediction()
+
+      if (!isMounted) {
+        return
+      }
+
+      setPrediction(pitPrediction.prediction)
+      setPredictionSource(pitPrediction.source)
+      setIsPredictionLoading(false)
+    }
+
     void loadDashboard()
+    void loadPrediction()
 
     return () => {
       isMounted = false
@@ -71,7 +86,7 @@ export function StrategyPage() {
     )
   }
 
-  if (!dashboardData || !raceState || !prediction || activeLap === null) {
+  if (!dashboardData || !raceState || activeLap === null) {
     return (
       <section className="strategy-state-panel" aria-labelledby="strategy-loading-title">
         <p className="eyebrow live-eyebrow">
@@ -118,6 +133,8 @@ export function StrategyPage() {
         <div className="left-stack" id="strategy">
           <PitRecommendationPanel
             branches={dashboardData.strategyBranches}
+            isFallback={predictionSource === "fallback"}
+            isLoading={isPredictionLoading}
             prediction={prediction}
           />
           <RaceTimeline

@@ -153,7 +153,8 @@ Frontend usage:
 1. Request `GET /predict/sample-request`.
 2. POST the response body to `POST /predict`.
 3. Render the returned `PredictionResponse` in the recommendation panel.
-4. If `VITE_RACEIQ_API_BASE_URL` is unset or either request fails, the frontend uses the local deterministic prediction fixture.
+4. While the request is pending, the recommendation panel shows a loading state.
+5. If `VITE_RACEIQ_API_BASE_URL` is unset or either request fails, the frontend uses the local deterministic prediction fixture and labels the panel as fallback-powered.
 
 ### Frontend Predict Contract Notes
 

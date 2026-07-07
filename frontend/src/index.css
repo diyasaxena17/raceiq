@@ -746,6 +746,49 @@ html {
   text-transform: uppercase;
 }
 
+.factor-list span.is-pending {
+  color: var(--muted);
+}
+
+.prediction-status {
+  align-items: center;
+  border-radius: 8px;
+  display: flex;
+  font-size: 0.82rem;
+  font-weight: 800;
+  gap: 10px;
+  line-height: 1.45;
+  margin: 0 0 16px;
+  min-height: 42px;
+  padding: 10px 12px;
+}
+
+.prediction-status svg {
+  flex: 0 0 auto;
+  height: 18px;
+  width: 18px;
+}
+
+.prediction-status.is-live {
+  background: rgba(0, 208, 132, 0.09);
+  border: 1px solid rgba(0, 208, 132, 0.18);
+  color: var(--text-strong);
+}
+
+.prediction-status.is-live svg {
+  color: var(--green);
+}
+
+.prediction-status.is-fallback {
+  background: rgba(255, 212, 59, 0.08);
+  border: 1px solid rgba(255, 212, 59, 0.18);
+  color: var(--text);
+}
+
+.prediction-status.is-fallback svg {
+  color: var(--yellow);
+}
+
 .branch-list {
   display: grid;
   gap: 12px;

@@ -5,13 +5,21 @@ import type { PredictionResponse } from "../lib/api"
 
 type PitRecommendationPanelProps = {
   branches: StrategyBranch[]
-  prediction: PredictionResponse
+  isFallback: boolean
+  isLoading: boolean
+  prediction: PredictionResponse | null
 }
 
 const recommendationLabels = {
   monitor: "Monitor the window",
   pit_now: "Bring Norris in now",
   stay_out: "Keep Norris out",
+}
+
+const recommendationCopy = {
+  monitor: "RaceIQ is watching the decision window before committing to a stop.",
+  pit_now: "RaceIQ sees enough tyre and pace pressure to make the stop this lap.",
+  stay_out: "RaceIQ is protecting track position while the current tyre remains viable.",
 }
 
 const riskLabels = {
@@ -33,8 +41,19 @@ function formatDelta(delta: number) {
   return `${sign}${delta.toFixed(1)}s race ${delta >= 0 ? "gain" : "loss"}`
 }
 
-export function PitRecommendationPanel({ branches, prediction }: PitRecommendationPanelProps) {
-  const confidence = Math.round(prediction.confidence * 100)
+export function PitRecommendationPanel({
+  branches,
+  isFallback,
+  isLoading,
+  prediction,
+}: PitRecommendationPanelProps) {
+  const title = prediction
+    ? recommendationLabels[prediction.recommendation]
+    : "Calculating pit call"
+  const confidence = prediction ? `${Math.round(prediction.confidence * 100)}%` : "--"
+  const copy = prediction
+    ? prediction.reason || recommendationCopy[prediction.recommendation]
+    : "Waiting for normalized race state, tyre model inputs, and strategy signals."
 
   return (
     <section className="panel recommendation-panel" aria-labelledby="recommendation-title">
@@ -46,32 +65,47 @@ export function PitRecommendationPanel({ branches, prediction }: PitRecommendati
         </div>
         <div>
           <p className="eyebrow">RaceIQ call</p>
-          <h2 id="recommendation-title">{recommendationLabels[prediction.recommendation]}</h2>
+          <h2 id="recommendation-title">{title}</h2>
         </div>
-        <strong>{confidence}%</strong>
+        <strong>{confidence}</strong>
       </div>
 
-      <p className="recommendation-copy">{prediction.reason}</p>
+      <p className="recommendation-copy">{copy}</p>
 
       <div className="decision-grid">
         <div>
           <span>Expected delta</span>
-          <strong>{formatDelta(prediction.expected_time_delta)}</strong>
+          <strong>{prediction ? formatDelta(prediction.expected_time_delta) : "Pending"}</strong>
         </div>
         <div>
           <span>Suggested tyre</span>
-          <strong>{formatCompound(prediction.suggested_compound)}</strong>
+          <strong>{prediction ? formatCompound(prediction.suggested_compound) : "Pending"}</strong>
         </div>
         <div>
           <span>Risk level</span>
-          <strong>{riskLabels[prediction.risk_level]}</strong>
+          <strong>{prediction ? riskLabels[prediction.risk_level] : "Pending"}</strong>
         </div>
       </div>
 
       <div className="factor-list" aria-label="Prediction top factors">
-        {prediction.top_factors.map((factor) => (
-          <span key={factor}>{factor}</span>
-        ))}
+        {prediction
+          ? prediction.top_factors.map((factor) => <span key={factor}>{factor}</span>)
+          : ["Race state", "Tyre model", "Timing feed"].map((factor) => (
+              <span className="is-pending" key={factor}>
+                {factor}
+              </span>
+            ))}
+      </div>
+
+      <div className={`prediction-status ${isFallback ? "is-fallback" : "is-live"}`}>
+        <Radio aria-hidden="true" />
+        <span>
+          {isLoading
+            ? "Prediction channel warming up."
+            : isFallback
+              ? "Using local deterministic prediction fallback."
+              : "Backend prediction contract is live."}
+        </span>
       </div>
 
       <div className="branch-list" aria-label="Strategy branches">

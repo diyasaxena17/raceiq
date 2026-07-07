@@ -13,6 +13,8 @@ test("renders the RaceIQ command dashboard", async ({ page }) => {
 
   await expect(page.getByRole("heading", { name: "Read the race before the race reads you." })).toBeVisible()
   await expect(page.getByRole("heading", { name: "Bring Norris in now" })).toBeVisible()
+  await expect(page.getByText("Using local deterministic prediction fallback.")).toBeVisible()
+  await expect(page.getByText("hard tyre recovery window")).toBeVisible()
   await expect(page.getByRole("heading", { name: "Silverstone pulse map" })).toBeVisible()
   await expect(page.getByRole("heading", { name: "Medium compound is near the edge" })).toBeVisible()
   await expect(page.getByText("Next two race outlook")).toBeVisible()

@@ -43,6 +43,11 @@ export type PredictionResponse = {
   top_factors: string[]
 }
 
+export type PitPredictionResult = {
+  prediction: PredictionResponse
+  source: "backend" | "fallback"
+}
+
 const MOCK_LATENCY_MS = 180
 const API_BASE_URL = import.meta.env.VITE_RACEIQ_API_BASE_URL?.replace(/\/$/, "")
 
@@ -99,6 +104,24 @@ export async function getPredictSampleRequest(): Promise<RaceStateRequest | null
   }
 }
 
+async function postPitPredictionToBackend(
+  raceState: RaceStateRequest,
+): Promise<PredictionResponse> {
+  const response = await fetch(`${API_BASE_URL}/predict`, {
+    body: JSON.stringify(raceState),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+  })
+
+  if (!response.ok) {
+    throw new Error(`Pit prediction request failed with ${response.status}`)
+  }
+
+  return (await response.json()) as PredictionResponse
+}
+
 export async function postPitPrediction(
   raceState: RaceStateRequest,
 ): Promise<PredictionResponse> {
@@ -107,37 +130,31 @@ export async function postPitPrediction(
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/predict`, {
-      body: JSON.stringify(raceState),
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    })
-
-    if (!response.ok) {
-      throw new Error(`Pit prediction request failed with ${response.status}`)
-    }
-
-    return (await response.json()) as PredictionResponse
+    return await postPitPredictionToBackend(raceState)
   } catch (error) {
     console.warn("Falling back to local pit prediction fixture.", error)
     return cloneFixture(fallbackPrediction)
   }
 }
 
-export async function getPitPrediction(): Promise<PredictionResponse> {
+export async function getPitPrediction(): Promise<PitPredictionResult> {
   if (API_BASE_URL) {
     try {
       const sampleRequest = await getPredictSampleRequestFromBackend()
-      return await postPitPrediction(sampleRequest)
+      return {
+        prediction: await postPitPredictionToBackend(sampleRequest),
+        source: "backend",
+      }
     } catch (error) {
       console.warn("Falling back to local pit prediction fixture.", error)
     }
   }
 
   await delay(MOCK_LATENCY_MS)
-  return cloneFixture(fallbackPrediction)
+  return {
+    prediction: cloneFixture(fallbackPrediction),
+    source: "fallback",
+  }
 }
 
 export async function getStrategyDashboard(): Promise<StrategyDashboardData> {
