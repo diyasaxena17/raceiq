@@ -63,6 +63,7 @@ Early MVP dashboard and backend contract alignment.
 - Added a frontend race-scenario system with Silverstone, Monaco, and Spa scenarios that drive the Strategy page cards, recommendation, timeline, tyre chart, circuit panel, and forecast preview.
 - Preserved the optional backend strategy, prediction, and replay calls for the default Silverstone scenario while keeping additional scenarios deterministic and local.
 - Made the typed frontend API layer scenario-aware so strategy, prediction, replay, and forecast fallbacks match the selected local race scenario while preserving the existing backend contracts.
+- Expanded frontend scenario coverage and backend sample contract assertions for the scenario-shaped dashboard payload.
 
 ## Completed
 

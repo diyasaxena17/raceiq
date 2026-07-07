@@ -168,11 +168,17 @@ def test_strategy_sample_matches_frontend_dashboard_contract() -> None:
 
     race_state = body["raceState"]
     assert race_state["race"] == "Silverstone Strategy Lab"
+    assert race_state["session"] == "Race simulation"
     assert race_state["circuit"] == "Silverstone"
+    assert race_state["lap"] == 27
     assert race_state["totalLaps"] == 52
+    assert race_state["weather"] == "Cloud cover building"
     assert race_state["trackTemp"] == "31 C"
     assert race_state["rainChance"] == "18%"
+    assert race_state["safetyCar"] == "Clear"
     assert race_state["focusDriver"] == "NOR"
+    assert isinstance(race_state["headline"], str)
+    assert isinstance(race_state["subline"], str)
 
     driver = body["drivers"][0]
     assert {"teamColor", "tyreAge", "pitStops", "paceDelta"} <= set(driver)
