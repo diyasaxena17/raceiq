@@ -77,10 +77,10 @@ Intended frontend modules:
 
 Current state:
 
-- `src/App.tsx` renders a static hero screen.
-- Component files are present but empty.
-- `src/lib/api.ts` is empty.
-- Vite starter files have been removed so the frontend tree only shows RaceIQ app files.
+- `src/App.tsx` owns the route shell with route-level code splitting.
+- The landing page and strategy dashboard are separate routes.
+- `src/lib/api.ts` exposes a typed strategy dashboard API that can call the backend when `VITE_RACEIQ_API_BASE_URL` is set.
+- The strategy page falls back to local deterministic mock data when the backend base URL is unset or the request fails.
 
 ## Backend Architecture
 
@@ -98,22 +98,24 @@ Intended backend modules:
 - `app/main.py`: FastAPI app setup and route registration.
 - `app/routes/health.py`: health endpoint.
 - `app/routes/predict.py`: pit recommendation endpoint.
-- Future `app/routes/forecast.py`: driver/team win-likelihood endpoint.
+- `app/routes/forecast.py`: driver/team win-likelihood endpoint.
 - `app/routes/replay.py`: race replay endpoint.
 - `app/schemas/race_state.py`: request schema for current race state.
 - `app/schemas/prediction.py`: response schema for recommendation output.
-- Future `app/schemas/forecast.py`: forecast request and response schemas.
+- `app/schemas/forecast.py`: forecast request and response schemas.
 - `app/services/feature_builder.py`: convert API input into model features.
 - `app/services/model_service.py`: rules or model-backed prediction logic.
-- Future `app/services/forecast_service.py`: driver/team win-likelihood prediction logic.
+- `app/services/forecast_service.py`: deterministic driver/team win-likelihood prediction logic.
 - `app/services/replay_service.py`: load or generate sample timeline state.
 
 Current state:
 
 - `app/routes/health.py` defines `GET /health`, and `app/main.py` registers it.
-- Predict, replay, schema, and service files exist but are empty.
-- Health is the only registered router.
-- No tests are present.
+- `app/routes/predict.py` defines `POST /predict`, backed by deterministic strategy rules.
+- `app/routes/replay.py` defines `POST /replay` and `GET /strategy/sample`, backed by local sample data.
+- `app/routes/forecast.py` defines `POST /forecast/win-likelihood`, backed by deterministic mock forecast logic.
+- Pydantic schemas exist for race state, prediction, replay, forecast, and sample dashboard responses.
+- Backend contract tests cover health, predict, forecast, replay, and the frontend-aligned sample dashboard payload.
 
 ## API Boundary
 
@@ -123,15 +125,20 @@ Minimum MVP endpoints:
 
 - `GET /health`
 - `POST /predict`
+- `GET /predict/sample-request`
 - `POST /replay`
+- `GET /strategy/sample`
+- `POST /forecast/win-likelihood`
 
 The first backend implementation can use deterministic rules. The frontend should not need to know whether a recommendation came from rules or from a trained model.
 
-Forecasting endpoint planned after the first MVP:
+`GET /strategy/sample` is the bridge contract for the current dashboard. Its response intentionally mirrors the frontend `StrategyDashboardData` type from `frontend/src/data/mockRace.ts`, including camelCase keys such as `raceState`, `totalLaps`, `teamColor`, `timelineEvents`, `tyreData`, `strategyBranches`, and `forecastPreview`. Backend request schemas and replay metadata can remain Pythonic/snake_case where they are not directly replacing the frontend dashboard fixture.
 
-- `POST /forecast/win-likelihood`
+During local development, the frontend reads `VITE_RACEIQ_API_BASE_URL`. When it is set to `http://localhost:8000`, `frontend/src/lib/api.ts` requests `GET /strategy/sample`; when it is unset or the request fails, the local fixture remains the fallback. The backend allows the Vite dev origins `http://localhost:5173` and `http://127.0.0.1:5173` through CORS for this handoff.
 
-This endpoint should return driver and team win probabilities for the next two races first, then later support all remaining races in the season.
+`POST /replay` keeps the original snake_case `race_state` and `events` response fields for compatibility, and adds frontend-ready `replayState` and `timelineEvents` fields for the timeline UI. `replayState` includes the current lap, total laps, requested lap range, weather, safety car state, and focus driver.
+
+`POST /forecast/win-likelihood` returns deterministic next-two-races driver and team win probabilities. It includes selected race IDs, race metadata, driver probabilities, team probabilities, top explanatory factors, model confidence, a generated timestamp, and data freshness. It does not use PostgreSQL or ML yet, and should later expand from deterministic baseline logic to model-backed forecasting.
 
 ## Data and ML Architecture
 
@@ -222,6 +229,7 @@ Current caveats:
 - `dev-scripts/setup.sh` and `dev-scripts/run-dev.sh` are placeholders.
 - `docker-compose.yml` is empty.
 - Backend dependency installation is manual through `backend/requirements.txt`.
+- Frontend-to-backend HTTP wiring exists for the strategy sample endpoint, but full-stack integration tests are still planned.
 
 ## Deployment Shape
 
@@ -245,8 +253,7 @@ No database is required for the first complete pit strategy demo. PostgreSQL is 
 
 ## Immediate Technical Risks
 
-- The docs and file names imply more functionality than currently exists.
-- Predict, replay, schema, and service files are scaffolded but not connected.
+- The docs and file names still describe planned forecasting and ML functionality that is not implemented yet.
 - ML pipeline scripts and outputs are placeholders, so model claims should stay conservative.
 - Forecasting requires careful data quality work because sentiment, weather, and car performance features can be noisy or unavailable.
-- No automated tests currently protect API contracts or frontend rendering.
+- Frontend rendering and backend API contracts have first-pass automated checks, but no end-to-end backend integration is wired into the UI yet.
