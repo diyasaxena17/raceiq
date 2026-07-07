@@ -1,15 +1,39 @@
-import { Activity, CloudSun, RadioTower, Trophy } from "lucide-react"
+import { Activity, CloudSun, RadioTower } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 
 import { CircuitPulse } from "../components/CircuitPulse"
 import { DriverStrategyCard } from "../components/DriverStrategyCard"
+import { ForecastPanel } from "../components/ForecastPanel"
 import { PitRecommendationPanel } from "../components/PitRecommendationPanel"
 import { RaceTimeline } from "../components/RaceTimeline"
 import { TyreDegradationChart } from "../components/TyreDegradationChart"
-import { getStrategyDashboard, type StrategyDashboardData } from "../lib/api"
+import {
+  getPitPrediction,
+  getRaceReplay,
+  getStrategyDashboard,
+  getWinLikelihoodForecast,
+  type PredictionResponse,
+  type PitPredictionResult,
+  type ReplayResponse,
+  type ReplayResult,
+  type StrategyDashboardData,
+  type WinLikelihoodResponse,
+  type WinLikelihoodResult,
+} from "../lib/api"
 
 export function StrategyPage() {
   const [dashboardData, setDashboardData] = useState<StrategyDashboardData | null>(null)
+  const [prediction, setPrediction] = useState<PredictionResponse | null>(null)
+  const [predictionSource, setPredictionSource] =
+    useState<PitPredictionResult["source"]>("fallback")
+  const [isPredictionLoading, setIsPredictionLoading] = useState(true)
+  const [forecast, setForecast] = useState<WinLikelihoodResponse | null>(null)
+  const [forecastSource, setForecastSource] =
+    useState<WinLikelihoodResult["source"]>("fallback")
+  const [isForecastLoading, setIsForecastLoading] = useState(true)
+  const [replay, setReplay] = useState<ReplayResponse | null>(null)
+  const [replaySource, setReplaySource] = useState<ReplayResult["source"]>("fallback")
+  const [isReplayLoading, setIsReplayLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeLap, setActiveLap] = useState<number | null>(null)
 
@@ -33,7 +57,53 @@ export function StrategyPage() {
       }
     }
 
+    async function loadPrediction() {
+      setIsPredictionLoading(true)
+
+      const pitPrediction = await getPitPrediction()
+
+      if (!isMounted) {
+        return
+      }
+
+      setPrediction(pitPrediction.prediction)
+      setPredictionSource(pitPrediction.source)
+      setIsPredictionLoading(false)
+    }
+
+    async function loadForecast() {
+      setIsForecastLoading(true)
+
+      const winLikelihood = await getWinLikelihoodForecast()
+
+      if (!isMounted) {
+        return
+      }
+
+      setForecast(winLikelihood.forecast)
+      setForecastSource(winLikelihood.source)
+      setIsForecastLoading(false)
+    }
+
+    async function loadReplay() {
+      setIsReplayLoading(true)
+
+      const raceReplay = await getRaceReplay()
+
+      if (!isMounted) {
+        return
+      }
+
+      setReplay(raceReplay.replay)
+      setReplaySource(raceReplay.source)
+      setActiveLap((currentLap) => currentLap ?? raceReplay.replay.replayState.currentLap)
+      setIsReplayLoading(false)
+    }
+
     void loadDashboard()
+    void loadPrediction()
+    void loadForecast()
+    void loadReplay()
 
     return () => {
       isMounted = false
@@ -48,6 +118,8 @@ export function StrategyPage() {
         : undefined,
     [dashboardData, raceState],
   )
+  const timelineEvents = replay?.timelineEvents ?? dashboardData?.timelineEvents ?? []
+  const timelineTotalLaps = replay?.replayState.totalLaps ?? raceState?.totalLaps ?? 0
 
   if (error) {
     return (
@@ -106,12 +178,19 @@ export function StrategyPage() {
 
       <section className="command-grid" aria-label="Race command dashboard">
         <div className="left-stack" id="strategy">
-          <PitRecommendationPanel branches={dashboardData.strategyBranches} />
+          <PitRecommendationPanel
+            branches={dashboardData.strategyBranches}
+            isFallback={predictionSource === "fallback"}
+            isLoading={isPredictionLoading}
+            prediction={prediction}
+          />
           <RaceTimeline
             activeLap={activeLap}
-            events={dashboardData.timelineEvents}
+            events={timelineEvents}
+            isFallback={replaySource === "fallback"}
+            isLoading={isReplayLoading}
             onLapChange={setActiveLap}
-            totalLaps={raceState.totalLaps}
+            totalLaps={timelineTotalLaps}
           />
         </div>
 
@@ -140,32 +219,11 @@ export function StrategyPage() {
             </div>
           </section>
 
-          <section className="panel forecast-panel" id="forecast" aria-labelledby="forecast-title">
-            <div className="panel-header">
-              <div>
-                <p className="eyebrow">Future module</p>
-                <h2 id="forecast-title">Next two race outlook</h2>
-              </div>
-              <Trophy aria-hidden="true" className="header-icon" />
-            </div>
-            <p>
-              A preview of the forecasting layer: team win likelihood will later combine track,
-              weather, car form, driver form, and sentiment.
-            </p>
-            <div className="forecast-bars">
-              {dashboardData.forecastPreview.map((team) => (
-                <div className="forecast-row" key={team.label}>
-                  <div>
-                    <span>{team.label}</span>
-                    <strong>{team.value}%</strong>
-                  </div>
-                  <div className="bar-track">
-                    <span style={{ background: team.color, width: `${team.value}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          <ForecastPanel
+            forecast={forecast}
+            isFallback={forecastSource === "fallback"}
+            isLoading={isForecastLoading}
+          />
 
           <section className="panel weather-panel" aria-labelledby="weather-title">
             <div className="panel-header">

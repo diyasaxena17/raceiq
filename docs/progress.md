@@ -54,6 +54,12 @@ Early MVP dashboard and backend contract alignment.
 - Added `GET /predict/sample-request` so the frontend can request a normalized sample payload before posting to `POST /predict`.
 - Refined `POST /replay` with frontend-ready `replayState` and `timelineEvents` fields while keeping legacy `race_state` and `events`.
 - Added deterministic `POST /forecast/win-likelihood` contracts for next-two-races driver/team probabilities, top factors, confidence, generated timestamp, and data freshness.
+- Wired the Strategy page to call `GET /predict/sample-request` and `POST /predict` through the typed frontend API layer, with local prediction fallback.
+- Updated `PitRecommendationPanel` to render `PredictionResponse` fields, loading state, top factors, and backend/local fallback status instead of hard-coded recommendation details.
+- Added typed frontend API support for `POST /forecast/win-likelihood` with deterministic local fallback data.
+- Replaced the static Strategy page forecast preview with a forecast panel that calls `getWinLikelihoodForecast()` and renders probabilities, confidence, top factors, data freshness, and fallback state.
+- Wired the Strategy page timeline to `POST /replay` through the typed frontend API layer, with dashboard timeline fallback.
+- Updated the README to reflect the current routed frontend, deterministic backend contracts, local run commands, testing commands, and `VITE_RACEIQ_API_BASE_URL` behavior.
 
 ## Completed
 
@@ -65,10 +71,14 @@ Early MVP dashboard and backend contract alignment.
 - Backend has deterministic contracts for health, predict, predict sample request, replay, the sample strategy dashboard, and win-likelihood forecasting.
 - Replay responses now include current lap, total laps, lap range, weather, safety car state, and timeline events for the future timeline UI.
 - Strategy dashboard data can now come from the backend sample endpoint or the local fixture fallback.
+- The Strategy recommendation panel can now render backend prediction data, a loading state, or a deterministic local fallback.
+- The Strategy page now exposes deterministic forecast data through a visible forecast panel.
+- The Strategy timeline can now use backend replay data or dashboard timeline fallback while preserving scrubber interaction.
+- The README now matches the current project state instead of describing the old static scaffold.
 
 ## In Progress
 
-- Dashboard polish and frontend-to-`POST /predict` interaction are ready for the next iteration.
+- Dashboard polish and forecast scenario controls are ready for the next iteration.
 
 ## Not Started
 
@@ -80,11 +90,11 @@ Early MVP dashboard and backend contract alignment.
 
 ## Next Recommended Steps
 
-1. Add a frontend strategy interaction that calls `GET /predict/sample-request` and then `POST /predict`.
-2. Add richer sample race scenarios.
-3. Add full-stack integration coverage for the optional backend sample data path.
+1. Add richer sample race scenarios.
+2. Add full-stack integration coverage for the optional backend sample and prediction data paths.
+3. Add scenario controls for forecast horizon, sentiment inclusion, and selected races.
 4. Design the PostgreSQL schema for forecasting before implementing ingestion.
-5. Expand the deterministic forecast contract into a frontend forecast panel when the strategy flow is wired.
+5. Plan the first model-backed forecast baseline after data foundations are defined.
 
 ## Update Template
 
