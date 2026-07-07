@@ -1030,6 +1030,28 @@ html {
   width: 100%;
 }
 
+.timeline-status {
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.45;
+  margin-bottom: 14px;
+  min-height: 34px;
+  padding: 8px 10px;
+}
+
+.timeline-status.is-live {
+  background: rgba(0, 208, 132, 0.09);
+  border: 1px solid rgba(0, 208, 132, 0.18);
+  color: var(--text-strong);
+}
+
+.timeline-status.is-fallback {
+  background: rgba(255, 212, 59, 0.08);
+  border: 1px solid rgba(255, 212, 59, 0.18);
+  color: var(--text);
+}
+
 .scrubber-labels {
   color: var(--muted);
   display: flex;

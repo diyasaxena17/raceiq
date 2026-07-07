@@ -9,10 +9,13 @@ import { RaceTimeline } from "../components/RaceTimeline"
 import { TyreDegradationChart } from "../components/TyreDegradationChart"
 import {
   getPitPrediction,
+  getRaceReplay,
   getStrategyDashboard,
   getWinLikelihoodForecast,
   type PredictionResponse,
   type PitPredictionResult,
+  type ReplayResponse,
+  type ReplayResult,
   type StrategyDashboardData,
   type WinLikelihoodResponse,
   type WinLikelihoodResult,
@@ -28,6 +31,9 @@ export function StrategyPage() {
   const [forecastSource, setForecastSource] =
     useState<WinLikelihoodResult["source"]>("fallback")
   const [isForecastLoading, setIsForecastLoading] = useState(true)
+  const [replay, setReplay] = useState<ReplayResponse | null>(null)
+  const [replaySource, setReplaySource] = useState<ReplayResult["source"]>("fallback")
+  const [isReplayLoading, setIsReplayLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeLap, setActiveLap] = useState<number | null>(null)
 
@@ -79,9 +85,25 @@ export function StrategyPage() {
       setIsForecastLoading(false)
     }
 
+    async function loadReplay() {
+      setIsReplayLoading(true)
+
+      const raceReplay = await getRaceReplay()
+
+      if (!isMounted) {
+        return
+      }
+
+      setReplay(raceReplay.replay)
+      setReplaySource(raceReplay.source)
+      setActiveLap((currentLap) => currentLap ?? raceReplay.replay.replayState.currentLap)
+      setIsReplayLoading(false)
+    }
+
     void loadDashboard()
     void loadPrediction()
     void loadForecast()
+    void loadReplay()
 
     return () => {
       isMounted = false
@@ -96,6 +118,8 @@ export function StrategyPage() {
         : undefined,
     [dashboardData, raceState],
   )
+  const timelineEvents = replay?.timelineEvents ?? dashboardData?.timelineEvents ?? []
+  const timelineTotalLaps = replay?.replayState.totalLaps ?? raceState?.totalLaps ?? 0
 
   if (error) {
     return (
@@ -162,9 +186,11 @@ export function StrategyPage() {
           />
           <RaceTimeline
             activeLap={activeLap}
-            events={dashboardData.timelineEvents}
+            events={timelineEvents}
+            isFallback={replaySource === "fallback"}
+            isLoading={isReplayLoading}
             onLapChange={setActiveLap}
-            totalLaps={raceState.totalLaps}
+            totalLaps={timelineTotalLaps}
           />
         </div>
 

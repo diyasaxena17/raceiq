@@ -21,6 +21,8 @@ test("renders the RaceIQ command dashboard", async ({ page }) => {
   await expect(page.getByText("Using local deterministic forecast fallback.")).toBeVisible()
   await expect(page.getByText("Model confidence")).toBeVisible()
   await expect(page.getByText("Street-circuit qualifying value")).toBeVisible()
+  await expect(page.getByText("Using dashboard timeline fallback.")).toBeVisible()
+  await expect(page.getByText("Virtual safety car window")).toBeVisible()
 })
 
 test("race scrubber updates the active lap", async ({ page }) => {

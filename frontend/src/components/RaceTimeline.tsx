@@ -5,6 +5,8 @@ import type { TimelineEvent } from "../data/mockRace"
 type RaceTimelineProps = {
   events: TimelineEvent[]
   activeLap: number
+  isFallback?: boolean
+  isLoading?: boolean
   totalLaps: number
   onLapChange: (lap: number) => void
 }
@@ -16,7 +18,14 @@ const eventIcons = {
   warning: Siren,
 }
 
-export function RaceTimeline({ events, activeLap, totalLaps, onLapChange }: RaceTimelineProps) {
+export function RaceTimeline({
+  activeLap,
+  events,
+  isFallback = true,
+  isLoading = false,
+  onLapChange,
+  totalLaps,
+}: RaceTimelineProps) {
   return (
     <section className="panel timeline-panel" aria-labelledby="timeline-title">
       <div className="panel-header">
@@ -26,6 +35,16 @@ export function RaceTimeline({ events, activeLap, totalLaps, onLapChange }: Race
         </div>
         <span className="lap-pill">
           {activeLap}/{totalLaps}
+        </span>
+      </div>
+
+      <div className={`timeline-status ${isFallback ? "is-fallback" : "is-live"}`}>
+        <span>
+          {isLoading
+            ? "Replay channel warming up."
+            : isFallback
+              ? "Using dashboard timeline fallback."
+              : "Backend replay contract is live."}
         </span>
       </div>
 

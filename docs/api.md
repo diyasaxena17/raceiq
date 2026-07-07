@@ -323,7 +323,7 @@ Frontend timeline usage:
 - `frontend/src/lib/api.ts` exposes typed request/response models and `getRaceReplay()`.
 - The function calls `POST /replay` only when `VITE_RACEIQ_API_BASE_URL` is set.
 - If the backend is unavailable or the base URL is unset, the function returns deterministic local fallback replay data.
-- The current Strategy page timeline is not wired to this API function yet.
+- The Strategy page timeline uses this replay data when available and falls back to the dashboard timeline data.
 - Use `replayState.currentLap` for the active lap.
 - Use `replayState.totalLaps` for the scrubber max.
 - Use `replayState.lapRange.fromLap` and `replayState.lapRange.toLap` to label filtered replay windows.

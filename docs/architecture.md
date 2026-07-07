@@ -81,7 +81,7 @@ Current state:
 - The landing page and strategy dashboard are separate routes.
 - `src/lib/api.ts` exposes a typed strategy dashboard API that can call the backend when `VITE_RACEIQ_API_BASE_URL` is set.
 - `src/lib/api.ts` also exposes typed prediction calls for `GET /predict/sample-request` and `POST /predict`.
-- `src/lib/api.ts` includes typed `POST /replay` support with deterministic local fallback data, but the timeline UI is not wired to it yet.
+- `src/lib/api.ts` includes typed `POST /replay` support with deterministic local fallback data, and the Strategy timeline uses replay data when available.
 - `src/lib/api.ts` includes typed `POST /forecast/win-likelihood` support with deterministic local fallback data.
 - The Strategy page forecast panel renders team probabilities, driver probabilities, model confidence, top factors, data freshness, and backend/fallback state.
 - The strategy page falls back to local deterministic dashboard and prediction data when the backend base URL is unset or requests fail.
