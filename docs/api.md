@@ -153,10 +153,13 @@ Frontend usage:
 1. Request `GET /predict/sample-request`.
 2. POST the response body to `POST /predict`.
 3. Render the returned `PredictionResponse` in the recommendation panel.
+4. If `VITE_RACEIQ_API_BASE_URL` is unset or either request fails, the frontend uses the local deterministic prediction fixture.
 
 ### Frontend Predict Contract Notes
 
-The Strategy page should eventually call `POST /predict` from the existing dashboard state, but it should not wire the call directly from display strings yet. The current frontend `StrategyDashboardData` shape is optimized for UI rendering, while `POST /predict` expects normalized model input.
+The Strategy page calls the prediction flow through `frontend/src/lib/api.ts`. It asks the backend for `GET /predict/sample-request`, posts that normalized body to `POST /predict`, and passes the returned `PredictionResponse` into `PitRecommendationPanel`.
+
+The frontend should not generate the prediction request directly from display strings yet. The current frontend `StrategyDashboardData` shape is optimized for UI rendering, while `POST /predict` expects normalized model input.
 
 Recommended request generated from the current sample dashboard:
 
@@ -225,13 +228,12 @@ Frontend mapping rules for the current dashboard data:
 - `raceState.rainChance` display strings like `"18%"` -> decimal `rain_chance`
 - `raceState.safetyCar` display strings like `"Clear"` -> backend enum `clear`
 
-Current schema gaps before wiring from the Strategy page:
+Current schema gaps before generating predict requests directly from dashboard data:
 
 - `StrategyDashboardData` does not include stable `race_id` or `circuit` fields; the frontend would need to hardcode or infer them from `raceState.race`.
 - `trackTemp`, `rainChance`, `gap`, and `paceDelta` are display-formatted strings, so direct wiring would require parsing UI labels into numeric model inputs.
 - `safetyCar` and `tyre` use display casing, while `/predict` expects lowercase enum values.
-- The current `PitRecommendationPanel` renders static recommendation copy and does not accept a `PredictionResponse` prop yet.
-- The clean next step is to add a typed frontend API call that uses `GET /predict/sample-request` before posting to `/predict`.
+- The current safe path is to continue using `GET /predict/sample-request` until dashboard data includes normalized prediction input fields.
 
 ## Replay Race State
 

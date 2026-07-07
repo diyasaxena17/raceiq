@@ -54,6 +54,8 @@ Early MVP dashboard and backend contract alignment.
 - Added `GET /predict/sample-request` so the frontend can request a normalized sample payload before posting to `POST /predict`.
 - Refined `POST /replay` with frontend-ready `replayState` and `timelineEvents` fields while keeping legacy `race_state` and `events`.
 - Added deterministic `POST /forecast/win-likelihood` contracts for next-two-races driver/team probabilities, top factors, confidence, generated timestamp, and data freshness.
+- Wired the Strategy page to call `GET /predict/sample-request` and `POST /predict` through the typed frontend API layer, with local prediction fallback.
+- Updated `PitRecommendationPanel` to render `PredictionResponse` fields instead of hard-coded recommendation details.
 
 ## Completed
 
@@ -65,10 +67,11 @@ Early MVP dashboard and backend contract alignment.
 - Backend has deterministic contracts for health, predict, predict sample request, replay, the sample strategy dashboard, and win-likelihood forecasting.
 - Replay responses now include current lap, total laps, lap range, weather, safety car state, and timeline events for the future timeline UI.
 - Strategy dashboard data can now come from the backend sample endpoint or the local fixture fallback.
+- The Strategy recommendation panel can now render backend prediction data or a deterministic local fallback.
 
 ## In Progress
 
-- Dashboard polish and frontend-to-`POST /predict` interaction are ready for the next iteration.
+- Dashboard polish and forecast frontend integration are ready for the next iteration.
 
 ## Not Started
 
@@ -80,9 +83,9 @@ Early MVP dashboard and backend contract alignment.
 
 ## Next Recommended Steps
 
-1. Add a frontend strategy interaction that calls `GET /predict/sample-request` and then `POST /predict`.
-2. Add richer sample race scenarios.
-3. Add full-stack integration coverage for the optional backend sample data path.
+1. Add richer sample race scenarios.
+2. Add full-stack integration coverage for the optional backend sample and prediction data paths.
+3. Add a frontend forecast panel that calls `POST /forecast/win-likelihood`.
 4. Design the PostgreSQL schema for forecasting before implementing ingestion.
 5. Expand the deterministic forecast contract into a frontend forecast panel when the strategy flow is wired.
 

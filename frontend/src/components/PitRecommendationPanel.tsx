@@ -1,12 +1,41 @@
 import { Radio, ShieldCheck, Sparkles } from "lucide-react"
 
 import type { StrategyBranch } from "../data/mockRace"
+import type { PredictionResponse } from "../lib/api"
 
 type PitRecommendationPanelProps = {
   branches: StrategyBranch[]
+  prediction: PredictionResponse
 }
 
-export function PitRecommendationPanel({ branches }: PitRecommendationPanelProps) {
+const recommendationLabels = {
+  monitor: "Monitor the window",
+  pit_now: "Bring Norris in now",
+  stay_out: "Keep Norris out",
+}
+
+const riskLabels = {
+  high: "High",
+  low: "Controlled",
+  medium: "Measured",
+}
+
+function formatCompound(compound: PredictionResponse["suggested_compound"]) {
+  if (!compound) {
+    return "No change"
+  }
+
+  return `${compound.charAt(0).toUpperCase()}${compound.slice(1)} compound`
+}
+
+function formatDelta(delta: number) {
+  const sign = delta >= 0 ? "+" : ""
+  return `${sign}${delta.toFixed(1)}s race ${delta >= 0 ? "gain" : "loss"}`
+}
+
+export function PitRecommendationPanel({ branches, prediction }: PitRecommendationPanelProps) {
+  const confidence = Math.round(prediction.confidence * 100)
+
   return (
     <section className="panel recommendation-panel" aria-labelledby="recommendation-title">
       <div className="recommendation-alert">
@@ -17,29 +46,32 @@ export function PitRecommendationPanel({ branches }: PitRecommendationPanelProps
         </div>
         <div>
           <p className="eyebrow">RaceIQ call</p>
-          <h2 id="recommendation-title">Bring Norris in now</h2>
+          <h2 id="recommendation-title">{recommendationLabels[prediction.recommendation]}</h2>
         </div>
-        <strong>86%</strong>
+        <strong>{confidence}%</strong>
       </div>
 
-      <p className="recommendation-copy">
-        The medium tyre is losing bite and the pit window opens into clean air. A hard-tyre
-        attack now protects the undercut and improves the projected finish.
-      </p>
+      <p className="recommendation-copy">{prediction.reason}</p>
 
       <div className="decision-grid">
         <div>
           <span>Expected delta</span>
-          <strong>+4.8s race gain</strong>
+          <strong>{formatDelta(prediction.expected_time_delta)}</strong>
         </div>
         <div>
           <span>Suggested tyre</span>
-          <strong>Hard compound</strong>
+          <strong>{formatCompound(prediction.suggested_compound)}</strong>
         </div>
         <div>
           <span>Risk level</span>
-          <strong>Controlled</strong>
+          <strong>{riskLabels[prediction.risk_level]}</strong>
         </div>
+      </div>
+
+      <div className="factor-list" aria-label="Prediction top factors">
+        {prediction.top_factors.map((factor) => (
+          <span key={factor}>{factor}</span>
+        ))}
       </div>
 
       <div className="branch-list" aria-label="Strategy branches">

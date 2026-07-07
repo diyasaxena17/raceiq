@@ -6,10 +6,16 @@ import { DriverStrategyCard } from "../components/DriverStrategyCard"
 import { PitRecommendationPanel } from "../components/PitRecommendationPanel"
 import { RaceTimeline } from "../components/RaceTimeline"
 import { TyreDegradationChart } from "../components/TyreDegradationChart"
-import { getStrategyDashboard, type StrategyDashboardData } from "../lib/api"
+import {
+  getPitPrediction,
+  getStrategyDashboard,
+  type PredictionResponse,
+  type StrategyDashboardData,
+} from "../lib/api"
 
 export function StrategyPage() {
   const [dashboardData, setDashboardData] = useState<StrategyDashboardData | null>(null)
+  const [prediction, setPrediction] = useState<PredictionResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [activeLap, setActiveLap] = useState<number | null>(null)
 
@@ -18,13 +24,17 @@ export function StrategyPage() {
 
     async function loadDashboard() {
       try {
-        const data = await getStrategyDashboard()
+        const [data, pitPrediction] = await Promise.all([
+          getStrategyDashboard(),
+          getPitPrediction(),
+        ])
 
         if (!isMounted) {
           return
         }
 
         setDashboardData(data)
+        setPrediction(pitPrediction)
         setActiveLap(data.raceState.lap)
       } catch {
         if (isMounted) {
@@ -61,7 +71,7 @@ export function StrategyPage() {
     )
   }
 
-  if (!dashboardData || !raceState || activeLap === null) {
+  if (!dashboardData || !raceState || !prediction || activeLap === null) {
     return (
       <section className="strategy-state-panel" aria-labelledby="strategy-loading-title">
         <p className="eyebrow live-eyebrow">
@@ -106,7 +116,10 @@ export function StrategyPage() {
 
       <section className="command-grid" aria-label="Race command dashboard">
         <div className="left-stack" id="strategy">
-          <PitRecommendationPanel branches={dashboardData.strategyBranches} />
+          <PitRecommendationPanel
+            branches={dashboardData.strategyBranches}
+            prediction={prediction}
+          />
           <RaceTimeline
             activeLap={activeLap}
             events={dashboardData.timelineEvents}
