@@ -343,6 +343,7 @@ Frontend usage:
 - Leave `VITE_RACEIQ_API_BASE_URL` unset to use the local fixture.
 - Set `VITE_RACEIQ_API_BASE_URL=http://localhost:8000` to have `frontend/src/lib/api.ts` request `GET /strategy/sample`.
 - If the request fails, the frontend falls back to the local fixture so the strategy dashboard remains usable during backend downtime.
+- The frontend API helpers accept a local scenario id. The existing backend contract is used for the default Silverstone scenario; additional scenarios use deterministic local payloads that preserve the same frontend-facing types.
 
 Example response:
 
@@ -351,6 +352,7 @@ Example response:
   "raceState": {
     "race": "Silverstone Strategy Lab",
     "session": "Race simulation",
+    "circuit": "Silverstone",
     "lap": 27,
     "totalLaps": 52,
     "weather": "Cloud cover building",
@@ -503,6 +505,7 @@ Frontend usage:
 - The function calls `POST /forecast/win-likelihood` only when `VITE_RACEIQ_API_BASE_URL` is set.
 - If the backend is unavailable or the base URL is unset, the function returns deterministic local fallback forecast data.
 - The Strategy page forecast panel renders the response with loading and fallback states.
+- For non-default local race scenarios, the fallback forecast is generated from the selected scenario's driver board, pit-decision factors, and forecast preview while keeping the same `WinLikelihoodResponse` shape.
 
 ## MVP API Rule
 

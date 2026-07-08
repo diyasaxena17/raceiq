@@ -601,6 +601,62 @@ html {
   font-size: 0.98rem;
 }
 
+.scenario-panel {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0 auto 18px;
+  max-width: 1520px;
+}
+
+.scenario-button {
+  background: rgba(23, 26, 31, 0.78);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  min-height: 118px;
+  padding: 14px;
+  text-align: left;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.scenario-button:hover,
+.scenario-button.is-selected {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.48);
+  transform: translateY(-1px);
+}
+
+.scenario-button span,
+.scenario-button strong,
+.scenario-button small {
+  display: block;
+}
+
+.scenario-button span {
+  color: var(--text-strong);
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.scenario-button strong {
+  color: var(--blue);
+  font-size: 0.78rem;
+  margin-top: 8px;
+  text-transform: uppercase;
+}
+
+.scenario-button small {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  margin-top: 8px;
+}
+
 .command-grid {
   display: grid;
   gap: 18px;
@@ -1456,6 +1512,7 @@ html {
   }
 
   .session-strip,
+  .scenario-panel,
   .decision-grid,
   .branch-card dl,
   .circuit-readouts,

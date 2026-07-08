@@ -143,6 +143,7 @@ def get_strategy_sample() -> StrategyDashboardResponse:
         raceState=DashboardRaceState(
             race="Silverstone Strategy Lab",
             session="Race simulation",
+            circuit=SAMPLE_RACE_STATE.circuit,
             lap=27,
             totalLaps=52,
             weather="Cloud cover building",

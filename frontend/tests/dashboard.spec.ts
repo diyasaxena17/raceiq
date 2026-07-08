@@ -1,5 +1,41 @@
 import { expect, test } from "@playwright/test"
 
+const strategyScenarios = [
+  {
+    button: /Silverstone undercut/i,
+    circuitHeading: "Silverstone pulse map",
+    driverCode: "NOR",
+    forecastTeam: "McLaren",
+    headline: "Read the race before the race reads you.",
+    lapHeading: "Lap 27 decision frame",
+    recommendation: "Box this lap",
+    timelineEvent: "RaceIQ calls the decision lap",
+    tyreHeading: "Medium compound pressure",
+  },
+  {
+    button: /Monaco cover call/i,
+    circuitHeading: "Circuit de Monaco pulse map",
+    driverCode: "LEC",
+    forecastTeam: "Ferrari",
+    headline: "Track position is the fastest car here.",
+    lapHeading: "Lap 42 decision frame",
+    recommendation: "Stay out",
+    timelineEvent: "RaceIQ protects the place",
+    tyreHeading: "Hard compound pressure",
+  },
+  {
+    button: /Spa rain watch/i,
+    circuitHeading: "Spa-Francorchamps pulse map",
+    driverCode: "RUS",
+    forecastTeam: "Mercedes",
+    headline: "Wait for the rain, but not too long.",
+    lapHeading: "Lap 18 decision frame",
+    recommendation: "Monitor the window",
+    timelineEvent: "RaceIQ holds the trigger",
+    tyreHeading: "Medium compound pressure",
+  },
+]
+
 test("renders the RaceIQ landing page", async ({ page }) => {
   await page.goto("/")
 
@@ -12,12 +48,13 @@ test("renders the RaceIQ command dashboard", async ({ page }) => {
   await page.goto("/strategy")
 
   await expect(page.getByRole("heading", { name: "Read the race before the race reads you." })).toBeVisible()
-  await expect(page.getByRole("heading", { name: "Bring Norris in now" })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Box this lap" })).toBeVisible()
   await expect(page.getByText("Using local deterministic prediction fallback.")).toBeVisible()
   await expect(page.getByText("hard tyre recovery window")).toBeVisible()
   await expect(page.getByRole("heading", { name: "Silverstone pulse map" })).toBeVisible()
-  await expect(page.getByRole("heading", { name: "Medium compound is near the edge" })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Medium compound pressure" })).toBeVisible()
   await expect(page.getByText("Next two race outlook")).toBeVisible()
+  await expect(page.getByText("Scenario preview")).toBeVisible()
   await expect(page.getByText("Using local deterministic forecast fallback.")).toBeVisible()
   await expect(page.getByText("Model confidence")).toBeVisible()
   await expect(page.getByText("Street-circuit qualifying value")).toBeVisible()
@@ -33,6 +70,29 @@ test("race scrubber updates the active lap", async ({ page }) => {
 
   await expect(page.getByRole("heading", { name: "Lap 31 decision frame" })).toBeVisible()
   await expect(page.getByText("Strategy channel armed for lap 31")).toBeVisible()
+})
+
+test("scenario selector changes the strategy state", async ({ page }) => {
+  await page.goto("/strategy")
+
+  for (const scenario of strategyScenarios) {
+    await page.getByRole("button", { name: scenario.button }).click()
+
+    await expect(page.getByRole("button", { name: scenario.button })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    )
+    await expect(page.getByRole("heading", { name: scenario.headline })).toBeVisible()
+    await expect(page.getByRole("heading", { level: 2, name: scenario.recommendation })).toBeVisible()
+    await expect(page.getByRole("heading", { name: scenario.circuitHeading })).toBeVisible()
+    await expect(page.getByRole("heading", { name: scenario.tyreHeading })).toBeVisible()
+    await expect(page.getByRole("heading", { name: scenario.lapHeading })).toBeVisible()
+    await expect(page.getByText(scenario.timelineEvent)).toBeVisible()
+    await expect(page.getByText(`${scenario.driverCode} is inside the live scenario decision window.`)).toBeVisible()
+    await expect(
+      page.getByLabel("Scenario forecast preview").getByText(scenario.forecastTeam),
+    ).toBeVisible()
+  }
 })
 
 test("dashboard remains readable on mobile", async ({ page }) => {

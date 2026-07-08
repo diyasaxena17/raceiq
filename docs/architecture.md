@@ -83,6 +83,7 @@ Current state:
 - `src/lib/api.ts` also exposes typed prediction calls for `GET /predict/sample-request` and `POST /predict`.
 - `src/lib/api.ts` includes typed `POST /replay` support with deterministic local fallback data, and the Strategy timeline uses replay data when available.
 - `src/lib/api.ts` includes typed `POST /forecast/win-likelihood` support with deterministic local fallback data.
+- The typed API helpers accept a scenario id so the default Silverstone scenario can use the existing backend contracts while additional local scenarios still return contract-shaped deterministic fallback payloads.
 - The Strategy page forecast panel renders team probabilities, driver probabilities, model confidence, top factors, data freshness, and backend/fallback state.
 - The strategy page falls back to local deterministic dashboard and prediction data when the backend base URL is unset or requests fail.
 
@@ -136,7 +137,7 @@ Minimum MVP endpoints:
 
 The first backend implementation can use deterministic rules. The frontend should not need to know whether a recommendation came from rules or from a trained model.
 
-`GET /strategy/sample` is the bridge contract for the current dashboard. Its response intentionally mirrors the frontend `StrategyDashboardData` type from `frontend/src/data/mockRace.ts`, including camelCase keys such as `raceState`, `totalLaps`, `teamColor`, `timelineEvents`, `tyreData`, `strategyBranches`, and `forecastPreview`. Backend request schemas and replay metadata can remain Pythonic/snake_case where they are not directly replacing the frontend dashboard fixture.
+`GET /strategy/sample` is the bridge contract for the current dashboard. Its response intentionally mirrors the frontend `StrategyDashboardData` type from `frontend/src/data/mockRace.ts`, including camelCase keys such as `raceState`, `circuit`, `totalLaps`, `teamColor`, `timelineEvents`, `tyreData`, `strategyBranches`, and `forecastPreview`. Backend request schemas and replay metadata can remain Pythonic/snake_case where they are not directly replacing the frontend dashboard fixture.
 
 During local development, the frontend reads `VITE_RACEIQ_API_BASE_URL`. When it is set to `http://localhost:8000`, `frontend/src/lib/api.ts` requests `GET /strategy/sample`; when it is unset or the request fails, the local fixture remains the fallback. The backend allows the Vite dev origins `http://localhost:5173` and `http://127.0.0.1:5173` through CORS for this handoff.
 
