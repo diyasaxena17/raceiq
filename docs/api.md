@@ -381,7 +381,7 @@ GET /strategy/sample/{scenario_id}
 Frontend usage:
 
 - Leave `VITE_RACEIQ_API_BASE_URL` unset to use the local fixture.
-- Set `VITE_RACEIQ_API_BASE_URL=http://localhost:8000` to have `frontend/src/lib/api.ts` request `GET /strategy/sample`.
+- Set `VITE_RACEIQ_API_BASE_URL=http://localhost:8000` to have `frontend/src/lib/api.ts` request `GET /strategy/scenarios` for selector options and scenario-specific strategy samples when selected.
 - If the request fails, the frontend falls back to the local fixture so the strategy dashboard remains usable during backend downtime.
 - The frontend API helpers accept a scenario id. When the backend base URL is set, the helpers request scenario-specific backend samples for dashboard, predict sample request, and replay data. If a request fails, they fall back to deterministic local payloads.
 

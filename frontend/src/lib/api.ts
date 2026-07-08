@@ -50,6 +50,19 @@ export type PitPredictionResult = {
   source: "backend" | "fallback"
 }
 
+export type StrategyScenarioSummary = {
+  id: string
+  label: string
+  summary: string
+  circuit: string
+  race: string
+}
+
+export type StrategyScenariosResult = {
+  scenarios: StrategyScenarioSummary[]
+  source: "backend" | "fallback"
+}
+
 export type RaceMetadata = {
   race_id: string
   race_name: string
@@ -264,6 +277,16 @@ function getScenario(scenarioId = DEFAULT_SCENARIO_ID): RaceScenario {
   return raceScenarios.find((scenario) => scenario.id === scenarioId) ?? raceScenarios[0]
 }
 
+function getFallbackScenarioSummaries(): StrategyScenarioSummary[] {
+  return raceScenarios.map((scenario) => ({
+    circuit: scenario.data.raceState.circuit,
+    id: scenario.id,
+    label: scenario.label,
+    race: scenario.data.raceState.race,
+    summary: scenario.summary,
+  }))
+}
+
 function canUseBackendScenario() {
   return Boolean(API_BASE_URL)
 }
@@ -451,6 +474,35 @@ async function getStrategyDashboardFromBackend(
   }
 
   return (await response.json()) as StrategyDashboardData
+}
+
+async function getStrategyScenariosFromBackend(): Promise<StrategyScenarioSummary[]> {
+  const response = await fetch(`${API_BASE_URL}/strategy/scenarios`)
+
+  if (!response.ok) {
+    throw new Error(`Strategy scenarios request failed with ${response.status}`)
+  }
+
+  return (await response.json()) as StrategyScenarioSummary[]
+}
+
+export async function getStrategyScenarios(): Promise<StrategyScenariosResult> {
+  if (canUseBackendScenario()) {
+    try {
+      return {
+        scenarios: await getStrategyScenariosFromBackend(),
+        source: "backend",
+      }
+    } catch (error) {
+      console.warn("Falling back to local strategy scenario catalog.", error)
+    }
+  }
+
+  await delay(MOCK_LATENCY_MS)
+  return {
+    scenarios: cloneFixture(getFallbackScenarioSummaries()),
+    source: "fallback",
+  }
 }
 
 async function getPredictSampleRequestFromBackend(

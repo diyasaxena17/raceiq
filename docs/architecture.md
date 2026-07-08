@@ -83,7 +83,7 @@ Current state:
 - `src/lib/api.ts` also exposes typed prediction calls for `GET /predict/sample-request` and `POST /predict`.
 - `src/lib/api.ts` includes typed `POST /replay` support with deterministic local fallback data, and the Strategy timeline uses replay data when available.
 - `src/lib/api.ts` includes typed `POST /forecast/win-likelihood` support with deterministic local fallback data.
-- The typed API helpers accept a scenario id so the default Silverstone scenario can use the existing backend contracts while additional local scenarios still return contract-shaped deterministic fallback payloads.
+- The typed API helpers consume `GET /strategy/scenarios` for selector options and accept a scenario id so backend-backed Silverstone, Monaco, and Spa strategy samples can load when available while keeping local deterministic fallback payloads.
 - The Strategy page forecast panel renders team probabilities, driver probabilities, model confidence, top factors, data freshness, and backend/fallback state.
 - The strategy page falls back to local deterministic dashboard and prediction data when the backend base URL is unset or requests fail.
 

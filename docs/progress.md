@@ -65,6 +65,7 @@ Early MVP dashboard and backend contract alignment.
 - Made the typed frontend API layer scenario-aware so strategy, prediction, replay, and forecast fallbacks match the selected local race scenario while preserving the existing backend contracts.
 - Expanded frontend scenario coverage and backend sample contract assertions for the scenario-shaped dashboard payload.
 - Added a deterministic backend scenario contract with `GET /strategy/scenarios`, scenario-specific strategy samples, scenario-specific predict sample requests, and scenario-aware replay.
+- Updated the frontend API layer and Strategy selector to consume `GET /strategy/scenarios` while preserving local scenario fallback behavior.
 
 ## Completed
 
@@ -83,6 +84,7 @@ Early MVP dashboard and backend contract alignment.
 - The Strategy dashboard can now switch between three deterministic race scenarios without changing routes.
 - The scenario selector now requests contract-shaped data through `frontend/src/lib/api.ts` for every selected scenario.
 - The backend can now serve the same deterministic Strategy scenarios through API contracts while preserving Silverstone as the default path.
+- The Strategy selector can now hydrate its scenario catalog from the backend when `VITE_RACEIQ_API_BASE_URL` is set.
 
 ## In Progress
 
