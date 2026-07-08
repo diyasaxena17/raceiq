@@ -10,6 +10,7 @@ class ReplayRequest(BaseModel):
     focus_driver: str = Field("NOR")
     from_lap: int = Field(1, ge=1)
     to_lap: int | None = Field(None, ge=1)
+    scenario_id: str | None = Field(None)
 
 
 class ReplayLapRange(BaseModel):

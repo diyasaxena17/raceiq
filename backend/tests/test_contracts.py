@@ -189,3 +189,86 @@ def test_strategy_sample_matches_frontend_dashboard_contract() -> None:
     assert len(body["tyreData"]) > 0
     assert len(body["strategyBranches"]) > 0
     assert len(body["forecastPreview"]) > 0
+
+
+def test_strategy_scenarios_lists_available_samples() -> None:
+    response = client.get("/strategy/scenarios")
+
+    assert response.status_code == 200
+
+    body = response.json()
+    scenario_ids = {scenario["id"] for scenario in body}
+    assert {
+        "silverstone-undercut",
+        "monaco-track-position",
+        "spa-rain-arrival",
+    } <= scenario_ids
+
+    for scenario in body:
+        assert {"id", "label", "summary", "circuit", "race"} <= set(scenario)
+
+
+def test_strategy_samples_are_scenario_aware() -> None:
+    monaco_response = client.get("/strategy/sample/monaco-track-position")
+    spa_response = client.get("/strategy/sample/spa-rain-arrival")
+
+    assert monaco_response.status_code == 200
+    assert spa_response.status_code == 200
+
+    monaco = monaco_response.json()
+    spa = spa_response.json()
+
+    assert monaco["raceState"]["circuit"] == "Circuit de Monaco"
+    assert monaco["raceState"]["focusDriver"] == "LEC"
+    assert monaco["timelineEvents"][0]["title"] == "Leaders complete first stops"
+
+    assert spa["raceState"]["circuit"] == "Spa-Francorchamps"
+    assert spa["raceState"]["safetyCar"] == "VSC"
+    assert spa["raceState"]["focusDriver"] == "RUS"
+    assert spa["timelineEvents"][0]["title"] == "Dry race pace stabilizes"
+
+
+def test_predict_sample_request_is_scenario_aware() -> None:
+    response = client.get("/predict/sample-request/spa-rain-arrival")
+
+    assert response.status_code == 200
+
+    body = response.json()
+    assert body["race_id"] == "spa-rain-arrival-sim"
+    assert body["circuit"] == "Spa-Francorchamps"
+    assert body["lap"] == 18
+    assert body["total_laps"] == 44
+    assert body["rain_chance"] == 0.61
+    assert body["safety_car"] == "vsc"
+    assert body["focus_driver"] == "RUS"
+    assert body["drivers"][0]["code"] == "RUS"
+
+    predict_response = client.post("/predict", json=body)
+    assert predict_response.status_code == 200
+    assert predict_response.json()["recommendation"] in {"pit_now", "stay_out", "monitor"}
+
+
+def test_replay_can_select_scenario() -> None:
+    response = client.post(
+        "/replay",
+        json={
+            "race_id": "monaco-track-position-sim",
+            "focus_driver": "LEC",
+            "from_lap": 35,
+            "to_lap": 42,
+            "scenario_id": "monaco-track-position",
+        },
+    )
+
+    assert response.status_code == 200
+
+    body = response.json()
+    assert body["race_state"]["race_id"] == "monaco-track-position-sim"
+    assert body["race_state"]["circuit"] == "Circuit de Monaco"
+    assert body["replayState"]["currentLap"] == 42
+    assert body["replayState"]["totalLaps"] == 78
+    assert body["replayState"]["lapRange"] == {"fromLap": 35, "toLap": 42}
+    assert [event["title"] for event in body["timelineEvents"]] == [
+        "Traffic compresses the window",
+        "RaceIQ protects the place",
+    ]

@@ -13,6 +13,11 @@ def predict_sample_request() -> RaceStateRequest:
     return get_sample_predict_request()
 
 
+@router.get("/predict/sample-request/{scenario_id}", response_model=RaceStateRequest)
+def predict_sample_request_for_scenario(scenario_id: str) -> RaceStateRequest:
+    return get_sample_predict_request(scenario_id)
+
+
 @router.post("/predict", response_model=PredictionResponse)
 def predict_strategy(race_state: RaceStateRequest) -> PredictionResponse:
     try:

@@ -118,6 +118,7 @@ Current state:
 - `app/routes/health.py` defines `GET /health`, and `app/main.py` registers it.
 - `app/routes/predict.py` defines `POST /predict`, backed by deterministic strategy rules.
 - `app/routes/replay.py` defines `POST /replay` and `GET /strategy/sample`, backed by local sample data.
+- `app/routes/replay.py` also defines `GET /strategy/scenarios` and scenario-specific `GET /strategy/sample/{scenario_id}` for the deterministic scenario catalog.
 - `app/routes/forecast.py` defines `POST /forecast/win-likelihood`, backed by deterministic mock forecast logic.
 - Pydantic schemas exist for race state, prediction, replay, forecast, and sample dashboard responses.
 - Backend contract tests cover health, predict, forecast, replay, and the frontend-aligned sample dashboard payload.
@@ -133,11 +134,16 @@ Minimum MVP endpoints:
 - `GET /predict/sample-request`
 - `POST /replay`
 - `GET /strategy/sample`
+- `GET /strategy/scenarios`
+- `GET /strategy/sample/{scenario_id}`
+- `GET /predict/sample-request/{scenario_id}`
 - `POST /forecast/win-likelihood`
 
 The first backend implementation can use deterministic rules. The frontend should not need to know whether a recommendation came from rules or from a trained model.
 
 `GET /strategy/sample` is the bridge contract for the current dashboard. Its response intentionally mirrors the frontend `StrategyDashboardData` type from `frontend/src/data/mockRace.ts`, including camelCase keys such as `raceState`, `circuit`, `totalLaps`, `teamColor`, `timelineEvents`, `tyreData`, `strategyBranches`, and `forecastPreview`. Backend request schemas and replay metadata can remain Pythonic/snake_case where they are not directly replacing the frontend dashboard fixture.
+
+`GET /strategy/scenarios` exposes the deterministic backend scenario catalog. `GET /strategy/sample` and `GET /predict/sample-request` remain default Silverstone paths, while `GET /strategy/sample/{scenario_id}` and `GET /predict/sample-request/{scenario_id}` let the frontend hydrate Monaco and Spa through the same contract. `POST /replay` accepts optional `scenario_id` and still supports race-id based selection for compatibility.
 
 During local development, the frontend reads `VITE_RACEIQ_API_BASE_URL`. When it is set to `http://localhost:8000`, `frontend/src/lib/api.ts` requests `GET /strategy/sample`; when it is unset or the request fails, the local fixture remains the fallback. The backend allows the Vite dev origins `http://localhost:5173` and `http://127.0.0.1:5173` through CORS for this handoff.
 

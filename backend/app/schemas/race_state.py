@@ -108,6 +108,14 @@ class ForecastPreview(BaseModel):
     color: str
 
 
+class StrategyScenarioSummary(BaseModel):
+    id: str
+    label: str
+    summary: str
+    circuit: str
+    race: str
+
+
 class StrategyDashboardResponse(BaseModel):
     raceState: DashboardRaceState
     drivers: list[DashboardDriver]
