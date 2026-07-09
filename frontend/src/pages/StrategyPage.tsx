@@ -12,18 +12,29 @@ import {
   getPitPrediction,
   getRaceReplay,
   getStrategyDashboard,
+  getStrategyScenarios,
   getWinLikelihoodForecast,
   type PitPredictionResult,
   type PredictionResponse,
   type ReplayResponse,
   type ReplayResult,
   type StrategyDashboardData,
+  type StrategyScenarioSummary,
   type WinLikelihoodResponse,
   type WinLikelihoodResult,
 } from "../lib/api"
 
+const fallbackScenarioOptions: StrategyScenarioSummary[] = raceScenarios.map((scenario) => ({
+  circuit: scenario.data.raceState.circuit,
+  id: scenario.id,
+  label: scenario.label,
+  race: scenario.data.raceState.race,
+  summary: scenario.summary,
+}))
+
 export function StrategyPage() {
   const [selectedScenarioId, setSelectedScenarioId] = useState(raceScenarios[0].id)
+  const [scenarioOptions, setScenarioOptions] = useState(fallbackScenarioOptions)
   const [dashboardData, setDashboardData] = useState<StrategyDashboardData>(
     raceScenarios[0].data,
   )
@@ -48,6 +59,26 @@ export function StrategyPage() {
   const raceState = dashboardData.raceState
   const timelineEvents = replay?.timelineEvents ?? dashboardData.timelineEvents
   const timelineTotalLaps = replay?.replayState.totalLaps ?? raceState.totalLaps
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function loadScenarioOptions() {
+      const result = await getStrategyScenarios()
+
+      if (!isMounted) {
+        return
+      }
+
+      setScenarioOptions(result.scenarios)
+    }
+
+    void loadScenarioOptions()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   useEffect(() => {
     let isMounted = true
@@ -155,7 +186,7 @@ export function StrategyPage() {
       </section>
 
       <section className="scenario-panel" aria-label="Race scenarios">
-        {raceScenarios.map((scenario) => {
+        {scenarioOptions.map((scenario) => {
           const isSelected = scenario.id === selectedScenarioId
 
           return (
@@ -167,7 +198,7 @@ export function StrategyPage() {
               type="button"
             >
               <span>{scenario.label}</span>
-              <strong>{scenario.data.raceState.circuit}</strong>
+              <strong>{scenario.circuit}</strong>
               <small>{scenario.summary}</small>
             </button>
           )

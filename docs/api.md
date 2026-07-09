@@ -97,6 +97,12 @@ GET /predict/sample-request
 
 This endpoint returns a normalized deterministic request body that can be posted directly to `POST /predict`. It exists so the frontend can call the prediction contract with the current sample race state without parsing display strings from the dashboard payload.
 
+`GET /predict/sample-request` remains the default Silverstone request. Scenario-specific requests are available at:
+
+```http
+GET /predict/sample-request/{scenario_id}
+```
+
 Example response:
 
 ```json
@@ -251,7 +257,8 @@ Example request:
   "race_id": "silverstone-2026-sim",
   "focus_driver": "NOR",
   "from_lap": 18,
-  "to_lap": 27
+  "to_lap": 27,
+  "scenario_id": "silverstone-undercut"
 }
 ```
 
@@ -321,7 +328,7 @@ Example response:
 Frontend timeline usage:
 
 - `frontend/src/lib/api.ts` exposes typed request/response models and `getRaceReplay()`.
-- The function calls `POST /replay` only when `VITE_RACEIQ_API_BASE_URL` is set.
+- The function calls `POST /replay` only when `VITE_RACEIQ_API_BASE_URL` is set, passing the selected scenario id.
 - If the backend is unavailable or the base URL is unset, the function returns deterministic local fallback replay data.
 - The Strategy page timeline uses this replay data when available and falls back to the dashboard timeline data.
 - Use `replayState.currentLap` for the active lap.
@@ -333,17 +340,50 @@ Frontend timeline usage:
 ## Sample Strategy Dashboard
 
 ```http
+GET /strategy/scenarios
+```
+
+This endpoint returns the deterministic scenario catalog available to the Strategy page. It is still mock/local backend data; no database or ingestion is involved.
+
+Example response:
+
+```json
+[
+  {
+    "id": "silverstone-undercut",
+    "label": "Silverstone undercut",
+    "summary": "Dry track, medium tyres fading, undercut window opening.",
+    "circuit": "Silverstone",
+    "race": "Silverstone Strategy Lab"
+  },
+  {
+    "id": "monaco-track-position",
+    "label": "Monaco cover call",
+    "summary": "Street circuit, low degradation, track position still king.",
+    "circuit": "Circuit de Monaco",
+    "race": "Monaco Position Lock"
+  }
+]
+```
+
+```http
 GET /strategy/sample
 ```
 
 This endpoint returns a deterministic sample payload for the current strategy dashboard. Its response shape intentionally matches the frontend `StrategyDashboardData` type in `frontend/src/data/mockRace.ts`, so the frontend can later move from local fixtures to HTTP without a UI data-mapping rewrite.
 
+`GET /strategy/sample` remains the default Silverstone scenario. Scenario-specific samples are available at:
+
+```http
+GET /strategy/sample/{scenario_id}
+```
+
 Frontend usage:
 
 - Leave `VITE_RACEIQ_API_BASE_URL` unset to use the local fixture.
-- Set `VITE_RACEIQ_API_BASE_URL=http://localhost:8000` to have `frontend/src/lib/api.ts` request `GET /strategy/sample`.
+- Set `VITE_RACEIQ_API_BASE_URL=http://localhost:8000` to have `frontend/src/lib/api.ts` request `GET /strategy/scenarios` for selector options and scenario-specific strategy samples when selected.
 - If the request fails, the frontend falls back to the local fixture so the strategy dashboard remains usable during backend downtime.
-- The frontend API helpers accept a local scenario id. The existing backend contract is used for the default Silverstone scenario; additional scenarios use deterministic local payloads that preserve the same frontend-facing types.
+- The frontend API helpers accept a scenario id. When the backend base URL is set, the helpers request scenario-specific backend samples for dashboard, predict sample request, and replay data. If a request fails, they fall back to deterministic local payloads.
 
 Example response:
 
@@ -509,4 +549,4 @@ Frontend usage:
 
 ## MVP API Rule
 
-The first backend pass implements `/health`, `/predict`, `/predict/sample-request`, `/replay`, `/strategy/sample`, and `/forecast/win-likelihood` with deterministic mock data. Database-backed and model-backed behavior is planned for later sprints.
+The first backend pass implements `/health`, `/predict`, `/predict/sample-request`, `/predict/sample-request/{scenario_id}`, `/replay`, `/strategy/scenarios`, `/strategy/sample`, `/strategy/sample/{scenario_id}`, and `/forecast/win-likelihood` with deterministic mock data. Database-backed, live-data, and model-backed behavior is planned for later sprints.

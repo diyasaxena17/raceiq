@@ -50,6 +50,19 @@ export type PitPredictionResult = {
   source: "backend" | "fallback"
 }
 
+export type StrategyScenarioSummary = {
+  id: string
+  label: string
+  summary: string
+  circuit: string
+  race: string
+}
+
+export type StrategyScenariosResult = {
+  scenarios: StrategyScenarioSummary[]
+  source: "backend" | "fallback"
+}
+
 export type RaceMetadata = {
   race_id: string
   race_name: string
@@ -264,7 +277,21 @@ function getScenario(scenarioId = DEFAULT_SCENARIO_ID): RaceScenario {
   return raceScenarios.find((scenario) => scenario.id === scenarioId) ?? raceScenarios[0]
 }
 
-function canUseBackendScenario(scenarioId = DEFAULT_SCENARIO_ID) {
+function getFallbackScenarioSummaries(): StrategyScenarioSummary[] {
+  return raceScenarios.map((scenario) => ({
+    circuit: scenario.data.raceState.circuit,
+    id: scenario.id,
+    label: scenario.label,
+    race: scenario.data.raceState.race,
+    summary: scenario.summary,
+  }))
+}
+
+function canUseBackendScenario() {
+  return Boolean(API_BASE_URL)
+}
+
+function canUseBackendForecast(scenarioId = DEFAULT_SCENARIO_ID) {
   return Boolean(API_BASE_URL) && scenarioId === DEFAULT_SCENARIO_ID
 }
 
@@ -435,8 +462,12 @@ function createScenarioForecast(scenario: RaceScenario): WinLikelihoodResponse {
   }
 }
 
-async function getStrategyDashboardFromBackend(): Promise<StrategyDashboardData> {
-  const response = await fetch(`${API_BASE_URL}/strategy/sample`)
+async function getStrategyDashboardFromBackend(
+  scenarioId = DEFAULT_SCENARIO_ID,
+): Promise<StrategyDashboardData> {
+  const path =
+    scenarioId === DEFAULT_SCENARIO_ID ? "/strategy/sample" : `/strategy/sample/${scenarioId}`
+  const response = await fetch(`${API_BASE_URL}${path}`)
 
   if (!response.ok) {
     throw new Error(`Strategy sample request failed with ${response.status}`)
@@ -445,8 +476,43 @@ async function getStrategyDashboardFromBackend(): Promise<StrategyDashboardData>
   return (await response.json()) as StrategyDashboardData
 }
 
-async function getPredictSampleRequestFromBackend(): Promise<RaceStateRequest> {
-  const response = await fetch(`${API_BASE_URL}/predict/sample-request`)
+async function getStrategyScenariosFromBackend(): Promise<StrategyScenarioSummary[]> {
+  const response = await fetch(`${API_BASE_URL}/strategy/scenarios`)
+
+  if (!response.ok) {
+    throw new Error(`Strategy scenarios request failed with ${response.status}`)
+  }
+
+  return (await response.json()) as StrategyScenarioSummary[]
+}
+
+export async function getStrategyScenarios(): Promise<StrategyScenariosResult> {
+  if (canUseBackendScenario()) {
+    try {
+      return {
+        scenarios: await getStrategyScenariosFromBackend(),
+        source: "backend",
+      }
+    } catch (error) {
+      console.warn("Falling back to local strategy scenario catalog.", error)
+    }
+  }
+
+  await delay(MOCK_LATENCY_MS)
+  return {
+    scenarios: cloneFixture(getFallbackScenarioSummaries()),
+    source: "fallback",
+  }
+}
+
+async function getPredictSampleRequestFromBackend(
+  scenarioId = DEFAULT_SCENARIO_ID,
+): Promise<RaceStateRequest> {
+  const path =
+    scenarioId === DEFAULT_SCENARIO_ID
+      ? "/predict/sample-request"
+      : `/predict/sample-request/${scenarioId}`
+  const response = await fetch(`${API_BASE_URL}${path}`)
 
   if (!response.ok) {
     throw new Error(`Predict sample request failed with ${response.status}`)
@@ -458,12 +524,12 @@ async function getPredictSampleRequestFromBackend(): Promise<RaceStateRequest> {
 export async function getPredictSampleRequest(
   scenarioId = DEFAULT_SCENARIO_ID,
 ): Promise<RaceStateRequest | null> {
-  if (!canUseBackendScenario(scenarioId)) {
+  if (!canUseBackendScenario()) {
     return cloneFixture(createRaceStateRequest(getScenario(scenarioId)))
   }
 
   try {
-    return await getPredictSampleRequestFromBackend()
+    return await getPredictSampleRequestFromBackend(scenarioId)
   } catch (error) {
     console.warn("Predict sample request is unavailable.", error)
     return null
@@ -492,7 +558,7 @@ export async function postPitPrediction(
   raceState: RaceStateRequest,
   scenarioId = DEFAULT_SCENARIO_ID,
 ): Promise<PredictionResponse> {
-  if (!canUseBackendScenario(scenarioId)) {
+  if (!canUseBackendScenario()) {
     return cloneFixture(getScenario(scenarioId).prediction)
   }
 
@@ -507,9 +573,9 @@ export async function postPitPrediction(
 export async function getPitPrediction(
   scenarioId = DEFAULT_SCENARIO_ID,
 ): Promise<PitPredictionResult> {
-  if (canUseBackendScenario(scenarioId)) {
+  if (canUseBackendScenario()) {
     try {
-      const sampleRequest = await getPredictSampleRequestFromBackend()
+      const sampleRequest = await getPredictSampleRequestFromBackend(scenarioId)
       return {
         prediction: await postPitPredictionToBackend(sampleRequest),
         source: "backend",
@@ -535,10 +601,14 @@ export async function getRaceReplay(
   },
   scenarioId = DEFAULT_SCENARIO_ID,
 ): Promise<ReplayResult> {
-  if (canUseBackendScenario(scenarioId)) {
+  if (canUseBackendScenario()) {
     try {
       const response = await fetch(`${API_BASE_URL}/replay`, {
-        body: JSON.stringify(request),
+        body: JSON.stringify({
+          ...request,
+          race_id: createScenarioRaceId(getScenario(scenarioId)),
+          scenario_id: scenarioId,
+        }),
         headers: {
           "Content-Type": "application/json",
         },
@@ -573,7 +643,7 @@ export async function getWinLikelihoodForecast(
   },
   scenarioId = DEFAULT_SCENARIO_ID,
 ): Promise<WinLikelihoodResult> {
-  if (canUseBackendScenario(scenarioId)) {
+  if (canUseBackendForecast(scenarioId)) {
     try {
       const response = await fetch(`${API_BASE_URL}/forecast/win-likelihood`, {
         body: JSON.stringify(request),
@@ -606,9 +676,9 @@ export async function getWinLikelihoodForecast(
 export async function getStrategyDashboard(
   scenarioId = DEFAULT_SCENARIO_ID,
 ): Promise<StrategyDashboardData> {
-  if (canUseBackendScenario(scenarioId)) {
+  if (canUseBackendScenario()) {
     try {
-      return await getStrategyDashboardFromBackend()
+      return await getStrategyDashboardFromBackend(scenarioId)
     } catch (error) {
       console.warn("Falling back to local strategy dashboard fixture.", error)
     }

@@ -189,3 +189,150 @@ def test_strategy_sample_matches_frontend_dashboard_contract() -> None:
     assert len(body["tyreData"]) > 0
     assert len(body["strategyBranches"]) > 0
     assert len(body["forecastPreview"]) > 0
+
+
+def test_default_strategy_paths_still_return_silverstone() -> None:
+    default_sample_response = client.get("/strategy/sample")
+    explicit_sample_response = client.get("/strategy/sample/silverstone-undercut")
+    default_predict_response = client.get("/predict/sample-request")
+    explicit_predict_response = client.get("/predict/sample-request/silverstone-undercut")
+
+    assert default_sample_response.status_code == 200
+    assert explicit_sample_response.status_code == 200
+    assert default_predict_response.status_code == 200
+    assert explicit_predict_response.status_code == 200
+
+    default_sample = default_sample_response.json()
+    explicit_sample = explicit_sample_response.json()
+    assert default_sample == explicit_sample
+    assert default_sample["raceState"]["circuit"] == "Silverstone"
+    assert default_sample["raceState"]["focusDriver"] == "NOR"
+
+    default_predict = default_predict_response.json()
+    explicit_predict = explicit_predict_response.json()
+    assert default_predict == explicit_predict
+    assert default_predict["race_id"] == "silverstone-2026-sim"
+    assert default_predict["focus_driver"] == "NOR"
+
+
+def test_unknown_scenario_defaults_to_silverstone_contract() -> None:
+    sample_response = client.get("/strategy/sample/not-a-real-scenario")
+    predict_response = client.get("/predict/sample-request/not-a-real-scenario")
+    replay_response = client.post(
+        "/replay",
+        json={
+            "race_id": "not-a-real-race",
+            "focus_driver": "NOR",
+            "from_lap": 18,
+            "to_lap": 27,
+            "scenario_id": "not-a-real-scenario",
+        },
+    )
+
+    assert sample_response.status_code == 200
+    assert predict_response.status_code == 200
+    assert replay_response.status_code == 200
+
+    assert sample_response.json()["raceState"]["circuit"] == "Silverstone"
+    assert predict_response.json()["race_id"] == "silverstone-2026-sim"
+    assert replay_response.json()["race_state"]["race_id"] == "silverstone-2026-sim"
+
+
+def test_strategy_scenarios_lists_available_samples() -> None:
+    response = client.get("/strategy/scenarios")
+
+    assert response.status_code == 200
+
+    body = response.json()
+    scenario_ids = {scenario["id"] for scenario in body}
+    assert {
+        "silverstone-undercut",
+        "monaco-track-position",
+        "spa-rain-arrival",
+    } <= scenario_ids
+    assert body[0]["id"] == "silverstone-undercut"
+
+    for scenario in body:
+        assert {"id", "label", "summary", "circuit", "race"} <= set(scenario)
+
+
+def test_strategy_samples_are_scenario_aware() -> None:
+    monaco_response = client.get("/strategy/sample/monaco-track-position")
+    spa_response = client.get("/strategy/sample/spa-rain-arrival")
+
+    assert monaco_response.status_code == 200
+    assert spa_response.status_code == 200
+
+    monaco = monaco_response.json()
+    spa = spa_response.json()
+
+    assert monaco["raceState"]["circuit"] == "Circuit de Monaco"
+    assert monaco["raceState"]["focusDriver"] == "LEC"
+    assert monaco["timelineEvents"][0]["title"] == "Leaders complete first stops"
+
+    assert spa["raceState"]["circuit"] == "Spa-Francorchamps"
+    assert spa["raceState"]["safetyCar"] == "VSC"
+    assert spa["raceState"]["focusDriver"] == "RUS"
+    assert spa["timelineEvents"][0]["title"] == "Dry race pace stabilizes"
+
+
+def test_predict_sample_request_is_scenario_aware() -> None:
+    response = client.get("/predict/sample-request/spa-rain-arrival")
+
+    assert response.status_code == 200
+
+    body = response.json()
+    assert body["race_id"] == "spa-rain-arrival-sim"
+    assert body["circuit"] == "Spa-Francorchamps"
+    assert body["lap"] == 18
+    assert body["total_laps"] == 44
+    assert body["rain_chance"] == 0.61
+    assert body["safety_car"] == "vsc"
+    assert body["focus_driver"] == "RUS"
+    assert body["drivers"][0]["code"] == "RUS"
+
+    predict_response = client.post("/predict", json=body)
+    assert predict_response.status_code == 200
+    assert predict_response.json()["recommendation"] == "monitor"
+
+
+def test_predict_sample_request_drives_distinct_recommendations() -> None:
+    expected_recommendations = {
+        "silverstone-undercut": "pit_now",
+        "monaco-track-position": "stay_out",
+        "spa-rain-arrival": "monitor",
+    }
+
+    for scenario_id, expected_recommendation in expected_recommendations.items():
+        sample_response = client.get(f"/predict/sample-request/{scenario_id}")
+        assert sample_response.status_code == 200
+
+        predict_response = client.post("/predict", json=sample_response.json())
+        assert predict_response.status_code == 200
+        assert predict_response.json()["recommendation"] == expected_recommendation
+
+
+def test_replay_can_select_scenario() -> None:
+    response = client.post(
+        "/replay",
+        json={
+            "race_id": "monaco-track-position-sim",
+            "focus_driver": "LEC",
+            "from_lap": 35,
+            "to_lap": 42,
+            "scenario_id": "monaco-track-position",
+        },
+    )
+
+    assert response.status_code == 200
+
+    body = response.json()
+    assert body["race_state"]["race_id"] == "monaco-track-position-sim"
+    assert body["race_state"]["circuit"] == "Circuit de Monaco"
+    assert body["replayState"]["currentLap"] == 42
+    assert body["replayState"]["totalLaps"] == 78
+    assert body["replayState"]["lapRange"] == {"fromLap": 35, "toLap": 42}
+    assert [event["title"] for event in body["timelineEvents"]] == [
+        "Traffic compresses the window",
+        "RaceIQ protects the place",
+    ]
