@@ -53,6 +53,12 @@ test("renders the RaceIQ landing page", async ({ page }) => {
 test("renders the RaceIQ command dashboard", async ({ page }) => {
   await page.goto("/strategy")
 
+  await expect(page.getByRole("button", { name: /Silverstone undercut/i })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  )
+  await expect(page.getByRole("button", { name: /Monaco cover call/i })).toBeVisible()
+  await expect(page.getByRole("button", { name: /Spa rain watch/i })).toBeVisible()
   await expect(page.getByRole("heading", { name: "Read the race before the race reads you." })).toBeVisible()
   await expect(page.getByRole("heading", { name: "Box this lap" })).toBeVisible()
   await expect(page.getByText("Using local deterministic prediction fallback.")).toBeVisible()
@@ -80,6 +86,13 @@ test("race scrubber updates the active lap", async ({ page }) => {
 
 test("scenario selector changes the strategy state", async ({ page }) => {
   await page.goto("/strategy")
+
+  await expect(page.getByRole("button", { name: /Silverstone undercut/i })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  )
+  await expect(page.getByText("Using local deterministic prediction fallback.")).toBeVisible()
+  await expect(page.getByText("Using dashboard timeline fallback.")).toBeVisible()
 
   for (const scenario of strategyScenarios) {
     await page.getByRole("button", { name: scenario.button }).click()

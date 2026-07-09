@@ -191,6 +191,53 @@ def test_strategy_sample_matches_frontend_dashboard_contract() -> None:
     assert len(body["forecastPreview"]) > 0
 
 
+def test_default_strategy_paths_still_return_silverstone() -> None:
+    default_sample_response = client.get("/strategy/sample")
+    explicit_sample_response = client.get("/strategy/sample/silverstone-undercut")
+    default_predict_response = client.get("/predict/sample-request")
+    explicit_predict_response = client.get("/predict/sample-request/silverstone-undercut")
+
+    assert default_sample_response.status_code == 200
+    assert explicit_sample_response.status_code == 200
+    assert default_predict_response.status_code == 200
+    assert explicit_predict_response.status_code == 200
+
+    default_sample = default_sample_response.json()
+    explicit_sample = explicit_sample_response.json()
+    assert default_sample == explicit_sample
+    assert default_sample["raceState"]["circuit"] == "Silverstone"
+    assert default_sample["raceState"]["focusDriver"] == "NOR"
+
+    default_predict = default_predict_response.json()
+    explicit_predict = explicit_predict_response.json()
+    assert default_predict == explicit_predict
+    assert default_predict["race_id"] == "silverstone-2026-sim"
+    assert default_predict["focus_driver"] == "NOR"
+
+
+def test_unknown_scenario_defaults_to_silverstone_contract() -> None:
+    sample_response = client.get("/strategy/sample/not-a-real-scenario")
+    predict_response = client.get("/predict/sample-request/not-a-real-scenario")
+    replay_response = client.post(
+        "/replay",
+        json={
+            "race_id": "not-a-real-race",
+            "focus_driver": "NOR",
+            "from_lap": 18,
+            "to_lap": 27,
+            "scenario_id": "not-a-real-scenario",
+        },
+    )
+
+    assert sample_response.status_code == 200
+    assert predict_response.status_code == 200
+    assert replay_response.status_code == 200
+
+    assert sample_response.json()["raceState"]["circuit"] == "Silverstone"
+    assert predict_response.json()["race_id"] == "silverstone-2026-sim"
+    assert replay_response.json()["race_state"]["race_id"] == "silverstone-2026-sim"
+
+
 def test_strategy_scenarios_lists_available_samples() -> None:
     response = client.get("/strategy/scenarios")
 
@@ -203,6 +250,7 @@ def test_strategy_scenarios_lists_available_samples() -> None:
         "monaco-track-position",
         "spa-rain-arrival",
     } <= scenario_ids
+    assert body[0]["id"] == "silverstone-undercut"
 
     for scenario in body:
         assert {"id", "label", "summary", "circuit", "race"} <= set(scenario)
