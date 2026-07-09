@@ -4,14 +4,14 @@ This document is the running project journal for RaceIQ. Update it at the end of
 
 ## Current Phase
 
-Early MVP dashboard and backend contract alignment.
+Early MVP dashboard and backend contract alignment, with deterministic scenario support.
 
 ## Current Status
 
-- Frontend: React, TypeScript, Vite, Tailwind, Recharts, Framer Motion, and Lucide are installed. The app has a cinematic landing page, a routed strategy dashboard, route-level code splitting, and a typed API boundary with local fixture fallback.
-- Backend: FastAPI is installed. `GET /health`, `POST /predict`, `GET /predict/sample-request`, `POST /replay`, `GET /strategy/sample`, and `POST /forecast/win-likelihood` are implemented with deterministic service logic and Pydantic schemas.
+- Frontend: React, TypeScript, Vite, Tailwind, Recharts, Framer Motion, and Lucide are installed. The app has a cinematic landing page, a routed strategy dashboard, route-level code splitting, a scenario selector, and a typed API boundary with local fixture fallback.
+- Backend: FastAPI is installed. `GET /health`, `GET /strategy/scenarios`, `GET /strategy/sample`, `GET /strategy/sample/{scenario_id}`, `GET /predict/sample-request`, `GET /predict/sample-request/{scenario_id}`, `POST /predict`, `POST /replay`, and `POST /forecast/win-likelihood` are implemented with deterministic service logic and Pydantic schemas.
 - ML: data folders, pipeline script placeholders, and output placeholders exist. No model has been trained yet.
-- Data: static/sample data is planned first. PostgreSQL is planned for the forecasting phase when historical features, sentiment snapshots, model runs, and forecast outputs need persistence.
+- Data: static/sample scenario data is implemented first. PostgreSQL is deferred until the forecasting phase needs historical features, sentiment snapshots, model runs, and forecast outputs.
 - Docs: product requirements, architecture, roadmap, API, data ingestion, data dictionary, and model card docs exist.
 
 ## Progress Log
@@ -87,10 +87,12 @@ Early MVP dashboard and backend contract alignment.
 - The scenario selector now requests contract-shaped data through `frontend/src/lib/api.ts` for every selected scenario.
 - The backend can now serve the same deterministic Strategy scenarios through API contracts while preserving Silverstone as the default path.
 - The Strategy selector can now hydrate its scenario catalog from the backend when `VITE_RACEIQ_API_BASE_URL` is set.
+- Desktop/mobile Playwright checks and backend contract tests cover the scenario selector, default Silverstone fallback, and scenario-specific backend routes.
 
 ## In Progress
 
-- Dashboard polish and forecast scenario controls are ready for the next iteration.
+- Full-stack confidence work: exercising backend-backed scenarios through the frontend in an automated browser flow.
+- Forecast scenario controls and model-readiness work are ready for later iterations.
 
 ## Not Started
 
@@ -98,13 +100,14 @@ Early MVP dashboard and backend contract alignment.
 - Data ingestion scripts.
 - ML model training.
 - Model-backed win-likelihood forecasting.
-- Full-stack integration tests that assert the frontend successfully renders backend-provided sample data.
+- Backend-backed scenario-specific win-likelihood forecasting beyond the default deterministic contract.
+- Live F1 data feeds, telemetry, and sentiment ingestion.
 
 ## Next Recommended Steps
 
-1. Add richer sample race scenarios.
-2. Add full-stack integration coverage for the optional backend sample and prediction data paths.
-3. Add scenario controls for forecast horizon, sentiment inclusion, and selected races.
+1. Add full-stack integration coverage for optional backend sample, prediction, replay, and scenario catalog paths.
+2. Add forecast controls for horizon, sentiment inclusion, and selected races.
+3. Split the verbose deterministic scenario registry into a clearer backend scenario module if it keeps growing.
 4. Design the PostgreSQL schema for forecasting before implementing ingestion.
 5. Plan the first model-backed forecast baseline after data foundations are defined.
 

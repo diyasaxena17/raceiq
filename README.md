@@ -10,6 +10,7 @@ The app is intentionally mock-first right now: recommendations and forecasts are
 - Strategy dashboard at `/strategy`
 - Planned forecast and methodology surfaces at `/forecast` and `/methodology`
 - Typed frontend API layer with local fallback data
+- Scenario selector with Silverstone, Monaco, and Spa race states
 - Dynamic pit recommendation panel backed by `POST /predict` when configured
 - Replay/timeline panel backed by `POST /replay` when configured
 - Visible win-likelihood forecast panel backed by `POST /forecast/win-likelihood` when configured
@@ -83,8 +84,11 @@ http://localhost:8000
 Implemented endpoints:
 
 - `GET /health`
+- `GET /strategy/scenarios`
 - `GET /strategy/sample`
+- `GET /strategy/sample/{scenario_id}`
 - `GET /predict/sample-request`
+- `GET /predict/sample-request/{scenario_id}`
 - `POST /predict`
 - `POST /replay`
 - `POST /forecast/win-likelihood`
@@ -122,4 +126,4 @@ pytest
 
 ## Roadmap
 
-Next work should focus on richer sample race scenarios, full-stack integration coverage, forecast scenario controls, and then the PostgreSQL/data foundation needed before real model-backed forecasting.
+Next work should focus on full-stack integration coverage for backend-backed scenarios, richer forecast controls, and then the PostgreSQL/data foundation needed before real model-backed forecasting.

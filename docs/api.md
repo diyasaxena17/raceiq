@@ -549,4 +549,4 @@ Frontend usage:
 
 ## MVP API Rule
 
-The first backend pass implements `/health`, `/predict`, `/predict/sample-request`, `/replay`, `/strategy/sample`, and `/forecast/win-likelihood` with deterministic mock data. Database-backed and model-backed behavior is planned for later sprints.
+The first backend pass implements `/health`, `/predict`, `/predict/sample-request`, `/predict/sample-request/{scenario_id}`, `/replay`, `/strategy/scenarios`, `/strategy/sample`, `/strategy/sample/{scenario_id}`, and `/forecast/win-likelihood` with deterministic mock data. Database-backed, live-data, and model-backed behavior is planned for later sprints.

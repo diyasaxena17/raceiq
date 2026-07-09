@@ -85,7 +85,7 @@ Current state:
 - `src/lib/api.ts` includes typed `POST /forecast/win-likelihood` support with deterministic local fallback data.
 - The typed API helpers consume `GET /strategy/scenarios` for selector options and accept a scenario id so backend-backed Silverstone, Monaco, and Spa strategy samples can load when available while keeping local deterministic fallback payloads.
 - The Strategy page forecast panel renders team probabilities, driver probabilities, model confidence, top factors, data freshness, and backend/fallback state.
-- The strategy page falls back to local deterministic dashboard and prediction data when the backend base URL is unset or requests fail.
+- The Strategy page falls back to local deterministic dashboard, scenario catalog, prediction, replay, and forecast data when the backend base URL is unset or requests fail.
 
 ## Backend Architecture
 
@@ -117,11 +117,11 @@ Current state:
 
 - `app/routes/health.py` defines `GET /health`, and `app/main.py` registers it.
 - `app/routes/predict.py` defines `POST /predict`, backed by deterministic strategy rules.
-- `app/routes/replay.py` defines `POST /replay` and `GET /strategy/sample`, backed by local sample data.
+- `app/routes/replay.py` defines `POST /replay` and `GET /strategy/sample`, backed by deterministic in-memory scenario data.
 - `app/routes/replay.py` also defines `GET /strategy/scenarios` and scenario-specific `GET /strategy/sample/{scenario_id}` for the deterministic scenario catalog.
 - `app/routes/forecast.py` defines `POST /forecast/win-likelihood`, backed by deterministic mock forecast logic.
 - Pydantic schemas exist for race state, prediction, replay, forecast, and sample dashboard responses.
-- Backend contract tests cover health, predict, forecast, replay, and the frontend-aligned sample dashboard payload.
+- Backend contract tests cover health, predict, forecast, replay, the scenario catalog, default Silverstone fallback behavior, and the frontend-aligned sample dashboard payload.
 
 ## API Boundary
 
@@ -145,7 +145,7 @@ The first backend implementation can use deterministic rules. The frontend shoul
 
 `GET /strategy/scenarios` exposes the deterministic backend scenario catalog. `GET /strategy/sample` and `GET /predict/sample-request` remain default Silverstone paths, while `GET /strategy/sample/{scenario_id}` and `GET /predict/sample-request/{scenario_id}` let the frontend hydrate Monaco and Spa through the same contract. `POST /replay` accepts optional `scenario_id` and still supports race-id based selection for compatibility.
 
-During local development, the frontend reads `VITE_RACEIQ_API_BASE_URL`. When it is set to `http://localhost:8000`, `frontend/src/lib/api.ts` requests `GET /strategy/sample`; when it is unset or the request fails, the local fixture remains the fallback. The backend allows the Vite dev origins `http://localhost:5173` and `http://127.0.0.1:5173` through CORS for this handoff.
+During local development, the frontend reads `VITE_RACEIQ_API_BASE_URL`. When it is set to `http://localhost:8000`, `frontend/src/lib/api.ts` requests the scenario catalog and scenario-specific strategy samples; when it is unset or a request fails, local deterministic fixtures remain the fallback. The backend allows the Vite dev origins `http://localhost:5173` and `http://127.0.0.1:5173` through CORS for this handoff.
 
 The Strategy recommendation panel uses the same API base URL to request `GET /predict/sample-request`, post that normalized body to `POST /predict`, and render the returned `PredictionResponse`. While the prediction request is pending, the panel renders a loading state. If the backend is unavailable, the panel renders a deterministic local prediction fallback and labels that state in the UI.
 
@@ -242,7 +242,7 @@ Current caveats:
 - `dev-scripts/setup.sh` and `dev-scripts/run-dev.sh` are placeholders.
 - `docker-compose.yml` is empty.
 - Backend dependency installation is manual through `backend/requirements.txt`.
-- Frontend-to-backend HTTP wiring exists for the strategy sample endpoint, but full-stack integration tests are still planned.
+- Frontend-to-backend HTTP wiring exists for strategy samples, scenario catalog, predict, replay, and forecast calls, but automated browser tests still run against local deterministic fallback data by default.
 
 ## Deployment Shape
 
@@ -266,7 +266,7 @@ No database is required for the first complete pit strategy demo. PostgreSQL is 
 
 ## Immediate Technical Risks
 
-- The docs and file names still describe planned forecasting and ML functionality that is not implemented yet.
+- Forecasting and ML docs intentionally describe planned capabilities that are not implemented yet.
 - ML pipeline scripts and outputs are placeholders, so model claims should stay conservative.
 - Forecasting requires careful data quality work because sentiment, weather, and car performance features can be noisy or unavailable.
-- Frontend rendering and backend API contracts have first-pass automated checks, but no end-to-end backend integration is wired into the UI yet.
+- Frontend rendering and backend API contracts have automated checks, but a full-stack browser test with the live FastAPI server is still deferred.
