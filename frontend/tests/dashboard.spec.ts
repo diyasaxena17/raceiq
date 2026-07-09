@@ -19,8 +19,11 @@ const strategyScenarios = [
     forecastTeam: "Ferrari",
     headline: "Track position is the fastest car here.",
     lapHeading: "Lap 42 decision frame",
+    rainChance: "4%",
     recommendation: "Stay out",
+    safetyCar: "Clear",
     timelineEvent: "RaceIQ protects the place",
+    trackTemp: "38 C",
     tyreHeading: "Hard compound pressure",
   },
   {
@@ -30,8 +33,11 @@ const strategyScenarios = [
     forecastTeam: "Mercedes",
     headline: "Wait for the rain, but not too long.",
     lapHeading: "Lap 18 decision frame",
+    rainChance: "61%",
     recommendation: "Monitor the window",
+    safetyCar: "VSC",
     timelineEvent: "RaceIQ holds the trigger",
+    trackTemp: "24 C",
     tyreHeading: "Medium compound pressure",
   },
 ]
@@ -89,6 +95,12 @@ test("scenario selector changes the strategy state", async ({ page }) => {
     await expect(page.getByRole("heading", { name: scenario.lapHeading })).toBeVisible()
     await expect(page.getByText(scenario.timelineEvent)).toBeVisible()
     await expect(page.getByText(`${scenario.driverCode} is inside the live scenario decision window.`)).toBeVisible()
+    if ("rainChance" in scenario) {
+      const sessionSummary = page.getByLabel("Session summary")
+      await expect(page.getByText(scenario.rainChance, { exact: true })).toBeVisible()
+      await expect(sessionSummary.getByText(scenario.safetyCar, { exact: true })).toBeVisible()
+      await expect(sessionSummary.getByText(scenario.trackTemp, { exact: true })).toBeVisible()
+    }
     await expect(
       page.getByLabel("Scenario forecast preview").getByText(scenario.forecastTeam),
     ).toBeVisible()

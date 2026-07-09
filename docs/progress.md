@@ -66,6 +66,7 @@ Early MVP dashboard and backend contract alignment.
 - Expanded frontend scenario coverage and backend sample contract assertions for the scenario-shaped dashboard payload.
 - Added a deterministic backend scenario contract with `GET /strategy/scenarios`, scenario-specific strategy samples, scenario-specific predict sample requests, and scenario-aware replay.
 - Updated the frontend API layer and Strategy selector to consume `GET /strategy/scenarios` while preserving local scenario fallback behavior.
+- Tuned the deterministic scenario data so Silverstone, Monaco, and Spa produce distinct visible race states and pit recommendations across backend and fallback paths.
 
 ## Completed
 

@@ -245,7 +245,23 @@ def test_predict_sample_request_is_scenario_aware() -> None:
 
     predict_response = client.post("/predict", json=body)
     assert predict_response.status_code == 200
-    assert predict_response.json()["recommendation"] in {"pit_now", "stay_out", "monitor"}
+    assert predict_response.json()["recommendation"] == "monitor"
+
+
+def test_predict_sample_request_drives_distinct_recommendations() -> None:
+    expected_recommendations = {
+        "silverstone-undercut": "pit_now",
+        "monaco-track-position": "stay_out",
+        "spa-rain-arrival": "monitor",
+    }
+
+    for scenario_id, expected_recommendation in expected_recommendations.items():
+        sample_response = client.get(f"/predict/sample-request/{scenario_id}")
+        assert sample_response.status_code == 200
+
+        predict_response = client.post("/predict", json=sample_response.json())
+        assert predict_response.status_code == 200
+        assert predict_response.json()["recommendation"] == expected_recommendation
 
 
 def test_replay_can_select_scenario() -> None:
