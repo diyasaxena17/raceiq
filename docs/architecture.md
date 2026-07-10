@@ -86,6 +86,7 @@ Current state:
 - The typed API helpers consume `GET /strategy/scenarios` for selector options and accept a scenario id so backend-backed Silverstone, Monaco, and Spa strategy samples can load when available while keeping local deterministic fallback payloads.
 - The Strategy page forecast panel renders team probabilities, driver probabilities, model confidence, top factors, data freshness, and backend/fallback state.
 - The Strategy page falls back to local deterministic dashboard, scenario catalog, prediction, replay, and forecast data when the backend base URL is unset or requests fail.
+- The Strategy page source indicators show `LIVE API`, `LOCAL`, or `SYNCING` so backend-backed and fallback data paths are visible without changing layout.
 
 ## Backend Architecture
 
@@ -146,6 +147,8 @@ The first backend implementation can use deterministic rules. The frontend shoul
 `GET /strategy/scenarios` exposes the deterministic backend scenario catalog. `GET /strategy/sample` and `GET /predict/sample-request` remain default Silverstone paths, while `GET /strategy/sample/{scenario_id}` and `GET /predict/sample-request/{scenario_id}` let the frontend hydrate Monaco and Spa through the same contract. `POST /replay` accepts optional `scenario_id` and still supports race-id based selection for compatibility.
 
 During local development, the frontend reads `VITE_RACEIQ_API_BASE_URL`. When it is set to `http://localhost:8000`, `frontend/src/lib/api.ts` requests the scenario catalog and scenario-specific strategy samples; when it is unset or a request fails, local deterministic fixtures remain the fallback. The backend allows the Vite dev origins `http://localhost:5173` and `http://127.0.0.1:5173` through CORS for this handoff.
+
+The full-stack browser test path is `npm run test:e2e:fullstack` from `frontend/`. That Playwright config starts FastAPI on `127.0.0.1:8000`, starts Vite on `127.0.0.1:5173` with `VITE_RACEIQ_API_BASE_URL=http://127.0.0.1:8000`, and verifies backend-backed Strategy scenario rendering for Silverstone, Monaco, and Spa. The default `npm run test:e2e` suite intentionally remains the local deterministic fallback path.
 
 The Strategy recommendation panel uses the same API base URL to request `GET /predict/sample-request`, post that normalized body to `POST /predict`, and render the returned `PredictionResponse`. While the prediction request is pending, the panel renders a loading state. If the backend is unavailable, the panel renders a deterministic local prediction fallback and labels that state in the UI.
 
@@ -228,6 +231,8 @@ cd frontend
 npm run dev
 npm run build
 npm run lint
+npm run test:e2e
+npm run test:e2e:fullstack
 ```
 
 Backend intended command:
@@ -242,7 +247,8 @@ Current caveats:
 - `dev-scripts/setup.sh` and `dev-scripts/run-dev.sh` are placeholders.
 - `docker-compose.yml` is empty.
 - Backend dependency installation is manual through `backend/requirements.txt`.
-- Frontend-to-backend HTTP wiring exists for strategy samples, scenario catalog, predict, replay, and forecast calls, but automated browser tests still run against local deterministic fallback data by default.
+- Frontend-to-backend HTTP wiring exists for strategy samples, scenario catalog, predict, replay, and forecast calls.
+- The default browser suite still runs against local deterministic fallback data; the dedicated full-stack suite exercises the live FastAPI handoff.
 
 ## Deployment Shape
 
@@ -269,4 +275,4 @@ No database is required for the first complete pit strategy demo. PostgreSQL is 
 - Forecasting and ML docs intentionally describe planned capabilities that are not implemented yet.
 - ML pipeline scripts and outputs are placeholders, so model claims should stay conservative.
 - Forecasting requires careful data quality work because sentiment, weather, and car performance features can be noisy or unavailable.
-- Frontend rendering and backend API contracts have automated checks, but a full-stack browser test with the live FastAPI server is still deferred.
+- Backend-backed scenario-specific win-likelihood forecasting is still deferred; non-default Strategy scenarios use local deterministic forecast fallback.

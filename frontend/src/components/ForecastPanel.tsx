@@ -59,7 +59,9 @@ export function ForecastPanel({
         <Trophy aria-hidden="true" className="header-icon" />
       </div>
 
-      <div className={`prediction-status ${isFallback ? "is-fallback" : "is-live"}`}>
+      <div
+        className={`prediction-status ${isFallback ? "is-fallback" : "is-live"} ${isLoading ? "is-loading" : ""}`}
+      >
         <RadioTower aria-hidden="true" />
         <span>{getStatusLabel(isLoading, source)}</span>
       </div>
