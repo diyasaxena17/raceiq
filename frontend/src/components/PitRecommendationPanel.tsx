@@ -97,7 +97,9 @@ export function PitRecommendationPanel({
             ))}
       </div>
 
-      <div className={`prediction-status ${isFallback ? "is-fallback" : "is-live"}`}>
+      <div
+        className={`prediction-status ${isFallback ? "is-fallback" : "is-live"} ${isLoading ? "is-loading" : ""}`}
+      >
         <Radio aria-hidden="true" />
         <span>
           {isLoading

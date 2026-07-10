@@ -38,7 +38,9 @@ export function RaceTimeline({
         </span>
       </div>
 
-      <div className={`timeline-status ${isFallback ? "is-fallback" : "is-live"}`}>
+      <div
+        className={`timeline-status ${isFallback ? "is-fallback" : "is-live"} ${isLoading ? "is-loading" : ""}`}
+      >
         <span>
           {isLoading
             ? "Replay channel warming up."

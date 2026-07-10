@@ -819,16 +819,45 @@ html {
   padding: 10px 12px;
 }
 
+.prediction-status::before,
+.timeline-status::before {
+  border-radius: 999px;
+  content: "LOCAL";
+  flex: 0 0 auto;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1;
+  min-width: 58px;
+  padding: 6px 8px;
+  text-align: center;
+}
+
 .prediction-status svg {
   flex: 0 0 auto;
   height: 18px;
   width: 18px;
 }
 
+.prediction-status span,
+.timeline-status span {
+  min-width: 0;
+}
+
 .prediction-status.is-live {
-  background: rgba(0, 208, 132, 0.09);
-  border: 1px solid rgba(0, 208, 132, 0.18);
+  background:
+    linear-gradient(90deg, rgba(59, 130, 246, 0.16), rgba(0, 208, 132, 0.08)),
+    rgba(0, 208, 132, 0.06);
+  border: 1px solid rgba(0, 208, 132, 0.28);
   color: var(--text-strong);
+}
+
+.prediction-status.is-live::before,
+.timeline-status.is-live::before {
+  background: rgba(0, 208, 132, 0.14);
+  border: 1px solid rgba(0, 208, 132, 0.44);
+  color: var(--green);
+  content: "LIVE API";
 }
 
 .prediction-status.is-live svg {
@@ -836,13 +865,30 @@ html {
 }
 
 .prediction-status.is-fallback {
-  background: rgba(255, 212, 59, 0.08);
-  border: 1px solid rgba(255, 212, 59, 0.18);
+  background:
+    linear-gradient(90deg, rgba(255, 212, 59, 0.12), rgba(59, 130, 246, 0.06)),
+    rgba(255, 212, 59, 0.05);
+  border: 1px solid rgba(255, 212, 59, 0.28);
   color: var(--text);
+}
+
+.prediction-status.is-fallback::before,
+.timeline-status.is-fallback::before {
+  background: rgba(255, 212, 59, 0.11);
+  border: 1px solid rgba(255, 212, 59, 0.4);
+  color: var(--yellow);
 }
 
 .prediction-status.is-fallback svg {
   color: var(--yellow);
+}
+
+.prediction-status.is-loading::before,
+.timeline-status.is-loading::before {
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: var(--blue-light);
+  content: "SYNCING";
 }
 
 .branch-list {
@@ -1087,24 +1133,31 @@ html {
 }
 
 .timeline-status {
+  align-items: center;
   border-radius: 8px;
+  display: flex;
   font-size: 0.78rem;
   font-weight: 800;
+  gap: 10px;
   line-height: 1.45;
   margin-bottom: 14px;
-  min-height: 34px;
-  padding: 8px 10px;
+  min-height: 42px;
+  padding: 9px 10px;
 }
 
 .timeline-status.is-live {
-  background: rgba(0, 208, 132, 0.09);
-  border: 1px solid rgba(0, 208, 132, 0.18);
+  background:
+    linear-gradient(90deg, rgba(59, 130, 246, 0.16), rgba(0, 208, 132, 0.08)),
+    rgba(0, 208, 132, 0.06);
+  border: 1px solid rgba(0, 208, 132, 0.28);
   color: var(--text-strong);
 }
 
 .timeline-status.is-fallback {
-  background: rgba(255, 212, 59, 0.08);
-  border: 1px solid rgba(255, 212, 59, 0.18);
+  background:
+    linear-gradient(90deg, rgba(255, 212, 59, 0.12), rgba(59, 130, 246, 0.06)),
+    rgba(255, 212, 59, 0.05);
+  border: 1px solid rgba(255, 212, 59, 0.28);
   color: var(--text);
 }
 
