@@ -10,6 +10,7 @@ Early MVP dashboard and backend contract alignment, with deterministic scenario 
 
 - Frontend: React, TypeScript, Vite, Tailwind, Recharts, Framer Motion, and Lucide are installed. The app has a cinematic landing page, a routed strategy dashboard, route-level code splitting, a scenario selector, and a typed API boundary with local fixture fallback.
 - Backend: FastAPI is installed. `GET /health`, `GET /strategy/scenarios`, `GET /strategy/sample`, `GET /strategy/sample/{scenario_id}`, `GET /predict/sample-request`, `GET /predict/sample-request/{scenario_id}`, `POST /predict`, `POST /replay`, and `POST /forecast/win-likelihood` are implemented with deterministic service logic and Pydantic schemas.
+- Testing: local-fallback Playwright, full-stack Playwright, backend compile checks, and backend contract tests are available. The full-stack suite starts FastAPI and verifies backend-backed Strategy scenarios.
 - ML: data folders, pipeline script placeholders, and output placeholders exist. No model has been trained yet.
 - Data: static/sample scenario data is implemented first. PostgreSQL is deferred until the forecasting phase needs historical features, sentiment snapshots, model runs, and forecast outputs.
 - Docs: product requirements, architecture, roadmap, API, data ingestion, data dictionary, and model card docs exist.
@@ -69,6 +70,13 @@ Early MVP dashboard and backend contract alignment, with deterministic scenario 
 - Tuned the deterministic scenario data so Silverstone, Monaco, and Spa produce distinct visible race states and pit recommendations across backend and fallback paths.
 - Added explicit backend and Playwright coverage for scenario routes, scenario switching, desktop/mobile rendering, and default Silverstone fallback behavior.
 
+### 2026-07-10
+
+- Added a dedicated full-stack Playwright mode that starts FastAPI, starts Vite with `VITE_RACEIQ_API_BASE_URL=http://127.0.0.1:8000`, and keeps the existing local-fallback E2E suite separate.
+- Expanded full-stack Strategy coverage so Silverstone, Monaco, and Spa verify scenario selection, circuit, weather, lap state, pit recommendation, replay timeline, and forecast/backend/fallback source status.
+- Polished Strategy data-source status UI with stable `LIVE API`, `LOCAL`, and `SYNCING` chips for prediction, replay, and forecast panels.
+- Updated docs to capture the scenario-backed frontend/backend handoff and the remaining deferred work.
+
 ## Completed
 
 - Repository structure is easier to read.
@@ -88,10 +96,11 @@ Early MVP dashboard and backend contract alignment, with deterministic scenario 
 - The backend can now serve the same deterministic Strategy scenarios through API contracts while preserving Silverstone as the default path.
 - The Strategy selector can now hydrate its scenario catalog from the backend when `VITE_RACEIQ_API_BASE_URL` is set.
 - Desktop/mobile Playwright checks and backend contract tests cover the scenario selector, default Silverstone fallback, and scenario-specific backend routes.
+- Full-stack Playwright coverage now verifies backend-backed Strategy rendering for Silverstone, Monaco, and Spa.
+- Strategy source badges now make live backend, local fallback, and loading states visible without shifting panel layout.
 
 ## In Progress
 
-- Full-stack confidence work: exercising backend-backed scenarios through the frontend in an automated browser flow.
 - Forecast scenario controls and model-readiness work are ready for later iterations.
 
 ## Not Started
@@ -105,11 +114,11 @@ Early MVP dashboard and backend contract alignment, with deterministic scenario 
 
 ## Next Recommended Steps
 
-1. Add full-stack integration coverage for optional backend sample, prediction, replay, and scenario catalog paths.
-2. Add forecast controls for horizon, sentiment inclusion, and selected races.
-3. Split the verbose deterministic scenario registry into a clearer backend scenario module if it keeps growing.
-4. Design the PostgreSQL schema for forecasting before implementing ingestion.
-5. Plan the first model-backed forecast baseline after data foundations are defined.
+1. Add forecast controls for horizon, sentiment inclusion, and selected races.
+2. Split the verbose deterministic scenario registry into a clearer backend scenario module if it keeps growing.
+3. Design the PostgreSQL schema for forecasting before implementing ingestion.
+4. Plan the first model-backed forecast baseline after data foundations are defined.
+5. Add backend-backed scenario-specific forecast behavior when the forecast contract is ready to vary by selected scenario.
 
 ## Update Template
 

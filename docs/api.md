@@ -162,6 +162,8 @@ Frontend usage:
 4. While the request is pending, the recommendation panel shows a loading state.
 5. If `VITE_RACEIQ_API_BASE_URL` is unset or either request fails, the frontend uses the local deterministic prediction fixture and labels the panel as fallback-powered.
 
+The full-stack Playwright suite runs this flow against the live FastAPI service by starting the frontend with `VITE_RACEIQ_API_BASE_URL=http://127.0.0.1:8000`.
+
 ### Frontend Predict Contract Notes
 
 The Strategy page calls the prediction flow through `frontend/src/lib/api.ts`. It asks the backend for `GET /predict/sample-request`, posts that normalized body to `POST /predict`, and passes the returned `PredictionResponse` into `PitRecommendationPanel`.
@@ -384,6 +386,7 @@ Frontend usage:
 - Set `VITE_RACEIQ_API_BASE_URL=http://localhost:8000` to have `frontend/src/lib/api.ts` request `GET /strategy/scenarios` for selector options and scenario-specific strategy samples when selected.
 - If the request fails, the frontend falls back to the local fixture so the strategy dashboard remains usable during backend downtime.
 - The frontend API helpers accept a scenario id. When the backend base URL is set, the helpers request scenario-specific backend samples for dashboard, predict sample request, and replay data. If a request fails, they fall back to deterministic local payloads.
+- `npm run test:e2e:fullstack` verifies the backend-backed Strategy handoff for Silverstone, Monaco, and Spa. It asserts scenario selection, circuit, weather, lap state, pit recommendation, replay timeline, and backend/fallback source labels.
 
 Example response:
 
@@ -546,6 +549,7 @@ Frontend usage:
 - If the backend is unavailable or the base URL is unset, the function returns deterministic local fallback forecast data.
 - The Strategy page forecast panel renders the response with loading and fallback states.
 - For non-default local race scenarios, the fallback forecast is generated from the selected scenario's driver board, pit-decision factors, and forecast preview while keeping the same `WinLikelihoodResponse` shape.
+- Current full-stack tests expect Silverstone to use the backend forecast contract and non-default Strategy scenarios to use deterministic local forecast fallback, because backend scenario-specific forecast generation is still deferred.
 
 ## MVP API Rule
 

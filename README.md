@@ -16,6 +16,7 @@ The app is intentionally mock-first right now: recommendations and forecasts are
 - Visible win-likelihood forecast panel backed by `POST /forecast/win-likelihood` when configured
 - FastAPI backend with deterministic Pydantic contracts and tests
 - Playwright smoke coverage for desktop and mobile frontend flows
+- Full-stack Playwright coverage for backend-backed Strategy scenarios
 
 ## Project Structure
 
@@ -104,7 +105,10 @@ cd frontend
 npm run lint
 npm run build
 npm run test:e2e
+npm run test:e2e:fullstack
 ```
+
+`npm run test:e2e` runs the local deterministic fallback browser suite. `npm run test:e2e:fullstack` starts FastAPI on `127.0.0.1:8000`, starts Vite with `VITE_RACEIQ_API_BASE_URL=http://127.0.0.1:8000`, and verifies backend-backed Strategy scenarios.
 
 Backend:
 
@@ -126,4 +130,4 @@ pytest
 
 ## Roadmap
 
-Next work should focus on full-stack integration coverage for backend-backed scenarios, richer forecast controls, and then the PostgreSQL/data foundation needed before real model-backed forecasting.
+Next work should focus on richer forecast controls, a clearer scenario-data module if the deterministic registry keeps growing, and then the PostgreSQL/data foundation needed before real model-backed forecasting.
